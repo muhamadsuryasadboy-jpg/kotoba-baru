@@ -1,0 +1,132 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Kotoba Memory</title>
+<style>
+:root{--bg:#f6f6f3;--fg:#1d1d1b;--cd:#fff;--mu:#6b6b66;--ac:#c2410c;--bd:#ddd9d0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161615;--fg:#eeeee9;--cd:#232321;--mu:#a09f98;--ac:#fb923c;--bd:#3a3935}}
+:root[data-theme="dark"]{--bg:#161615;--fg:#eeeee9;--cd:#232321;--mu:#a09f98;--ac:#fb923c;--bd:#3a3935}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:640px;margin:0 auto;padding:12px 12px 84px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--cd);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--mu);padding:10px 2px;font-size:12px}nav button.on{color:var(--ac);font-weight:700}
+h2{margin:6px 0 10px;font-size:20px}h3{margin:14px 0 6px;font-size:15px;color:var(--mu)}
+.c{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:8px 0}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.n{font-size:26px;font-weight:700}.m{color:var(--mu);font-size:13px}
+button.b,.b{display:block;width:100%;border:0;border-radius:12px;padding:14px;margin:8px 0;background:var(--ac);color:#fff;font-size:16px;font-weight:700}
+button.s{background:var(--cd);color:var(--fg);border:1px solid var(--bd)}button.sm{display:inline-block;width:auto;padding:8px 12px;font-size:14px;margin:4px 4px 4px 0}
+input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--cd);color:var(--fg);font:inherit;margin:4px 0}
+textarea{min-height:150px}.r{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.big{font-size:34px;text-align:center;padding:36px 8px;word-break:break-word}.rt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bar{height:8px;border-radius:4px;background:var(--ac);min-width:2px}.tag{font-size:12px;padding:2px 8px;border-radius:9px;border:1px solid var(--bd);color:var(--mu)}
+.er{color:#dc2626}.dp{color:#ca8a04}.sc{overflow-x:auto}#t{position:fixed;left:12px;right:12px;bottom:78px;background:#222;color:#fff;padding:10px;border-radius:10px;display:none;z-index:9}
+</style></head><body><div id="app"></div><div id="t"></div>
+<nav id="nav"></nav>
+<script>
+const $=s=>document.querySelector(s),DAY=864e5;
+const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let D={cards:[],batches:[],hist:[],set:{target:50,theme:'system'},nid:1,bid:1};
+try{const r=localStorage.getItem('kotoba_v1');if(r)D=Object.assign(D,JSON.parse(r))}catch(e){}
+function toast(m){const t=$('#t');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',3500)}
+function save(){try{localStorage.setItem('kotoba_v1',JSON.stringify(D))}catch(e){toast('Gagal menyimpan di browser ini. Segera buat backup.')}}
+const sod=()=>{const d=new Date();d.setHours(0,0,0,0);return +d},eod=()=>sod()+DAY-1;
+const fd=t=>t?new Date(t).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'-';
+const JP=/[\u3040-\u30ff\u4e00-\u9fff]/,key=c=>((c.jp||'')+'|'+(c.ro||'')).toLowerCase();
+const sc=c=>c.rc?Math.round(60*Math.min(1,c.iv/30)+25*((c.ok+c.ez+c.hd*.5)/c.rc)+15*(1-Math.min(1,c.lp*2/c.rc))):null;
+const cat=s=>s==null?'Baru':s<40?'Lemah':s<70?'Sedang':s<90?'Kuat':'Sangat kuat';
+const learned=c=>c.first!=null,due=c=>learned(c)&&c.next<=eod(),over=c=>learned(c)&&c.next<sod();
+const acc=h=>h.length?Math.round(100*h.filter(x=>x.r=='ingat'||x.r=='mudah').length/h.length)+'%':'Belum ada data';
+function parse(line){let t=line.trim(),p;
+ if(t.includes('|'))p=t.split('|');else if(t.includes('\t'))p=t.split('\t');else if(t.includes('='))p=t.split('=');
+ else if(/\s[-–—:]\s/.test(t))p=t.split(/\s[-–—:]\s/);else if(/\s{2,}/.test(t))p=t.split(/\s{2,}/);else return{err:'Pemisah tidak ditemukan'};
+ p=p.map(x=>x.trim()).filter(x=>x);
+ if(/^(japanese|jepang)$/i.test(p[0]))return{skip:1};
+ let lv='';p=p.filter(x=>/^N[1-5]$/i.test(x)?(lv=x.toUpperCase(),false):true);
+ if(p.length<2)return{err:'Kata atau arti kosong'};
+ if(JP.test(p[0]))return p.length==2?{jp:p[0],ro:'',me:p[1],lv}:{jp:p[0],ro:p[1],me:p.slice(2).join(', '),lv};
+ return{jp:'',ro:p[0],me:p.slice(1).join(', '),lv}}
+let V='home',S=null,IM=null,F={q:'',f:'all',b:'',n:50},CD=null,CF=null;
+function go(v){V=v;S=null;CD=null;CF=null;render()}
+function dupSet(){const s=new Set(D.cards.map(key));return s}
+function buildRows(text){const seen=dupSet(),rows=[];
+ text.split(/\r?\n/).forEach(raw=>{if(!raw.trim())return;const r=parse(raw);if(r.skip)return;rows.push(mk(raw,r,seen))});return rows}
+function mk(raw,r,seen){const o={raw,skip:0};if(r.err){o.st='err';o.msg=r.err;return o}
+ Object.assign(o,r);const k=key(r);if(!r.me||(!r.jp&&!r.ro)){o.st='err';o.msg='Data kosong';return o}
+ if(seen.has(k))o.st='dup';else{o.st='ok';seen.add(k)}return o}
+function doPreview(){const t=$('#paste').value;if(!t.trim()){toast('Belum ada teks yang ditempel.');return}
+ IM={name:$('#bname').value.trim()||'Tanpa nama',mode:'skip',rows:buildRows(t)};if(!IM.rows.length){toast('Tidak ada baris yang bisa dibaca.');IM=null;return}render()}
+function fixRow(i){const v=$('#r'+i).value,r=parse(v),seen=dupSet();IM.rows.forEach((x,j)=>{if(j!=i&&x.st=='ok')seen.add(key(x))});IM.rows[i]=mk(v,r,seen);render()}
+function skipRow(i){IM.rows[i].skip=!IM.rows[i].skip;render()}
+function setMode(v){IM.mode=v}
+function commit(){const rows=IM.rows;if(rows.some(r=>r.st=='err'&&!r.skip)){toast('Masih ada baris error. Perbaiki atau Skip.');return}
+ const b={id:D.bid++,day:D.batches.length+1,name:IM.name,at:Date.now()};let add=0,upd=0;const map={};D.cards.forEach(c=>map[key(c)]=c);
+ rows.forEach(r=>{if(r.skip||r.st=='err')return;
+  if(r.st=='dup'){const old=map[key(r)];if(IM.mode=='skip')return;if(IM.mode=='update'&&old){old.me=r.me;if(r.lv)old.lv=r.lv;upd++;return}}
+  D.cards.push({id:D.nid++,jp:r.jp,ro:r.ro,me:r.me,lv:r.lv,tags:'',b:b.id,created:Date.now(),first:null,last:null,next:null,score:null,iv:0,ease:2.5,rc:0,ok:0,wr:0,hd:0,ez:0,lp:0});add++});
+ if(add)D.batches.push(b);save();IM=null;toast(add+' kartu dibuat'+(upd?', '+upd+' diperbarui':''));go('batch')}
+function rate(c,r){const now=Date.now(),p=c.iv;if(c.first==null)c.first=now;c.rc++;c.last=now;
+ if(r=='lupa'){c.wr++;c.lp++;c.iv=1;c.ease=Math.max(1.3,c.ease-.2);c.next=now+6e5}
+ else{if(r=='sulit'){c.hd++;c.iv=Math.max(1,Math.round(p*1.2));c.ease=Math.max(1.3,c.ease-.15)}
+  else if(r=='ingat'){c.ok++;c.iv=p<1?1:Math.max(p+1,Math.round(p*c.ease))}
+  else{c.ez++;c.iv=p<1?4:Math.round(p*c.ease*1.3);c.ease+=.15}c.next=now+c.iv*DAY}
+ c.score=sc(c);D.hist.push({c:c.id,at:now,r,p,n:c.iv});save()}
+function newToday(){return D.cards.filter(c=>c.first>=sod()).length}
+function start(m){let L=[];const nw=D.cards.filter(c=>!learned(c)).slice(0,Math.max(0,D.set.target-newToday())),rv=D.cards.filter(due).sort((a,b)=>a.next-b.next);
+ if(m=='new')L=nw;else if(m=='rev')L=rv;else if(m=='mix')L=rv.concat(nw);
+ else if(m=='hard')L=D.cards.filter(learned).sort((a,b)=>a.score-b.score).slice(0,30);else L=D.cards.slice(0,300);
+ if(!L.length){toast(m=='new'?'Tidak ada kotoba baru (atau target hari ini sudah tercapai).':'Tidak ada kartu untuk mode ini.');return}
+ S={q:L.map(c=>c.id),i:0,show:0,rq:{},n:L.length};render()}
+function ans(r){const id=S.q[S.i],c=D.cards.find(x=>x.id==id);if(c)rate(c,r);
+ if(r=='lupa'&&!S.rq[id]){S.rq[id]=1;S.q.push(id)}S.i++;S.show=0;render()}
+function cardRow(c){const s=sc(c);return`<div class="r" onclick="CD=${c.id};render()"><div><b>${E(c.jp||c.ro)}</b> <span class="m">${c.jp&&c.ro?E(c.ro):''}</span><br><span class="m">${E(c.me)}</span></div><div class="m" style="text-align:right">${s==null?'Baru':s+'/100'}<br>${cat(s)}</div></div>`}
+function flt(){const q=F.q.toLowerCase(),bn={};D.batches.forEach(b=>bn[b.id]=('day '+b.day+' '+b.name).toLowerCase());
+ return D.cards.filter(c=>{if(F.b&&c.b!=F.b)return false;const s=sc(c);
+  const f=F.f;if(f=='new'&&learned(c))return false;if(f=='due'&&!due(c))return false;if(f=='over'&&!over(c))return false;
+  if(f=='weak'&&!(s!=null&&s<40))return false;if(f=='mid'&&!(s!=null&&s>=40&&s<70))return false;if(f=='strong'&&!(s!=null&&s>=70))return false;if(f=='lapse'&&c.lp<2)return false;
+  return!q||[c.jp,c.ro,c.me,c.lv,c.tags,bn[c.b]].join(' ').toLowerCase().includes(q)})}
+function setF(k,v){F[k]=v;F.n=50;if(k!='q')render();else{renderList()}}
+function renderList(){const L=flt();$('#lst').innerHTML=(L.slice(0,F.n).map(cardRow).join('')||'<p class="m">Belum ada data.</p>')+(L.length>F.n?'<button class="b s" onclick="F.n+=50;renderList()">Tampilkan lagi ('+(L.length-F.n)+')</button>':'');$('#cnt').textContent=L.length+' kotoba'}
+function retHtml(b){const cs=D.cards.filter(c=>c.b==b.id),m={};D.hist.forEach(x=>(m[x.c]=m[x.c]||[]).push(x));let o='';
+ [3,7,14,30].forEach(n=>{if(Date.now()<b.at+n*DAY)return;let ok=0,t=0;cs.forEach(c=>{const h=(m[c.id]||[]).filter(x=>x.at<=b.at+n*DAY).pop();if(h){t++;if(h.r=='ingat'||h.r=='mudah')ok++}});
+  o+=`<div class="r"><span>Hari ke-${n}</span><span>${t?ok+' dari '+t+' kartu masih diingat':'Belum ada data'}</span></div>`});
+ return o||'<p class="m">Belum ada data (batch masih baru).</p>'}
+function batchStat(b){const cs=D.cards.filter(c=>c.b==b.id),ids=new Set(cs.map(c=>c.id)),h=D.hist.filter(x=>ids.has(x.c)),s=cs.map(sc);
+ return{n:cs.length,k:s.filter(x=>x>=70).length,md:s.filter(x=>x!=null&&x>=40&&x<70).length,l:s.filter(x=>x!=null&&x<40).length,rv:h.length,a:acc(h)}}
+function R(){const m=V;let h='';
+ if(S)return study();if(CD)return detail();if(IM)return preview();
+ if(m=='home'){const td=D.hist.filter(x=>x.at>=sod()),lm=D.cards.filter(c=>learned(c)&&c.score<70).sort((a,b)=>a.score-b.score).slice(0,5);
+  h=`<h2>KOTOBA MEMORY</h2><div class="g"><div class="c"><div class="n">${Math.max(0,D.cards.filter(c=>!learned(c)).length?Math.min(D.set.target-newToday(),D.cards.filter(c=>!learned(c)).length):0)}</div><div class="m">🆕 Kotoba baru</div></div><div class="c"><div class="n">${D.cards.filter(due).length}</div><div class="m">🔄 Review (overdue: ${D.cards.filter(over).length})</div></div><div class="c"><div class="n" style="font-size:20px">${acc(td)}</div><div class="m">📊 Akurasi hari ini</div></div><div class="c"><div class="n">${td.filter(x=>x.r=='lupa').length}</div><div class="m">❌ Lupa hari ini</div></div></div><p class="m">Total kotoba: ${D.cards.length}</p>`;
+  if(!D.cards.length)h+=`<div class="c">Belum ada kotoba. Mulai dengan menempel daftar kotoba.</div><button class="b" onclick="go('imp')">TAMBAH KOTOBA</button>`;
+  else h+=`<button class="b" onclick="start('new')">BELAJAR KOTOBA BARU</button><button class="b" onclick="start('rev')">REVIEW HARI INI</button><button class="b s" onclick="go('imp')">+ Tempel kotoba baru</button><h3>KATA PERLU PERHATIAN</h3><div class="c">${lm.map(c=>`<div class="r"><span>${E(c.jp||c.ro)} — ${E(c.me)}</span><b>${c.score}/100</b></div>`).join('')||'<span class="m">Belum ada data.</span>'}</div>`}
+ else if(m=='study'){h=`<h2>Belajar</h2><button class="b" onclick="start('new')">Kotoba baru</button><button class="b" onclick="start('rev')">Review hari ini</button><button class="b" onclick="start('mix')">Campur</button><button class="b s" onclick="start('hard')">Kata sulit</button><button class="b s" onclick="start('all')">Semua kotoba</button>`}
+ else if(m=='imp'){h=`<h2>Tempel kotoba</h2><p class="m">Contoh: <code>ohayou = selamat pagi</code>, <code>おはよう | ohayou | selamat pagi | N5</code>, atau dipisah tab/spasi ganda. Satu kotoba per baris.</p><input id="bname" placeholder="Nama kategori, mis. Salam &amp; Ungkapan"><textarea id="paste" placeholder="Tempel di sini..."></textarea><button class="b" onclick="doPreview()">LIHAT PREVIEW</button>`}
+ else if(m=='words'){h=`<h2>Kotoba</h2><input placeholder="Cari kata, arti, level, batch, tag" value="${E(F.q)}" oninput="setF('q',this.value)"><select onchange="setF('f',this.value)">${[['all','Semua'],['new','Baru'],['due','Due'],['over','Overdue'],['weak','Lemah'],['mid','Sedang'],['strong','Kuat'],['lapse','Sering lupa']].map(x=>`<option value="${x[0]}"${F.f==x[0]?' selected':''}>${x[1]}</option>`).join('')}</select><select onchange="setF('b',this.value)"><option value="">Semua batch</option>${D.batches.map(b=>`<option value="${b.id}"${F.b==b.id?' selected':''}>Day ${b.day} ${E(b.name)}</option>`).join('')}</select><p class="m" id="cnt"></p><div id="lst"></div>`}
+ else if(m=='stats')h=stats();
+ else if(m=='batch'){h=`<h2>Batch</h2><button class="b" onclick="go('imp')">+ Tempel kotoba baru</button>`+(D.batches.map(b=>{const s=batchStat(b);return`<div class="c"><b>DAY ${b.day} — ${E(b.name)}</b><div class="m">${s.n} kotoba • dibuat ${fd(b.at)}</div><div class="r"><span>Kuat / Sedang / Lemah</span><span>${s.k} / ${s.md} / ${s.l}</span></div><div class="r"><span>Total review • Akurasi</span><span>${s.rv} • ${s.a}</span></div><h3>Retention</h3>${retHtml(b)}<button class="b s sm" onclick="F={q:'',f:'all',b:'${b.id}',n:50};go('words')">Lihat kata</button></div>`}).join('')||'<p class="m">Belum ada batch.</p>')}
+ else if(m=='set'){h=`<h2>Setelan</h2><div class="c"><b>Target kotoba baru per hari</b><select onchange="D.set.target=+this.value;save();toast('Disimpan')">${[10,20,30,50,100].map(n=>`<option${D.set.target==n?' selected':''}>${n}</option>`).join('')}</select><b>Tampilan</b><select onchange="D.set.theme=this.value;save();applyTheme()">${[['system','Ikuti sistem'],['light','Terang'],['dark','Gelap']].map(x=>`<option value="${x[0]}"${D.set.theme==x[0]?' selected':''}>${x[1]}</option>`).join('')}</select></div><div class="c"><b>Backup &amp; restore</b><p class="m">Backup berupa teks. Salin, lalu simpan di Catatan/WhatsApp ke diri sendiri. Untuk memulihkan, tempel lagi di sini.</p><button class="b sm" onclick="mkBackup()">Buat backup</button><button class="b s sm" onclick="cpBackup()">Salin</button><textarea id="bk" placeholder="Teks backup muncul / ditempel di sini"></textarea><button class="b s" onclick="restore1()">Pulihkan dari teks ini</button><div id="rs"></div></div>`}
+ return h}
+function stats(){const t=sod(),H=D.hist,cnt=(a,r)=>a.filter(x=>x.r==r).length,blk=(d,L)=>{const a=H.filter(x=>x.at>=t-(d-1)*DAY),nw=D.cards.filter(c=>c.first>=t-(d-1)*DAY).length;
+  return`<div class="r"><span>Kotoba baru</span><b>${nw}</b></div><div class="r"><span>Total review</span><b>${a.length}</b></div><div class="r"><span>Ingat / Lupa / Sulit / Mudah</span><b>${cnt(a,'ingat')} / ${cnt(a,'lupa')} / ${cnt(a,'sulit')} / ${cnt(a,'mudah')}</b></div><div class="r"><span>Akurasi</span><b>${acc(a)}</b></div>`+(L?`<div class="r"><span>Hari belajar</span><b>${new Set(a.map(x=>Math.floor((x.at-t)/DAY))).size}</b></div>`:'')},
+ sc2=D.cards.map(sc).filter(x=>x!=null),days=[];
+ for(let i=6;i>=0;i--){const n=H.filter(x=>x.at>=t-i*DAY&&x.at<t-i*DAY+DAY).length;days.push(n)}const mx=Math.max(1,...days);
+ const fg=D.cards.filter(c=>c.lp>0).sort((a,b)=>b.lp-a.lp).slice(0,10);
+ return`<h2>Statistik</h2><div class="c"><b>Hari ini</b>${blk(1)}</div><div class="c"><b>7 hari</b>${blk(7,1)}<div class="r"><span>Kata kuat / lemah</span><b>${sc2.filter(x=>x>=70).length} / ${sc2.filter(x=>x<40).length}</b></div><div class="m" style="margin-top:8px">Review per hari</div>${days.map((n,i)=>`<div style="display:flex;gap:8px;align-items:center"><span class="m" style="width:22px">${n}</span><div class="bar" style="width:${n/mx*70}%"></div></div>`).join('')}</div><div class="c"><b>30 hari</b>${blk(30,1)}<div class="r"><span>Kuat / Sedang / Lemah</span><b>${sc2.filter(x=>x>=70).length} / ${sc2.filter(x=>x>=40&&x<70).length} / ${sc2.filter(x=>x<40).length}</b></div></div><div class="c"><b>KATA PALING SERING LUPA</b>${fg.map((c,i)=>`<div class="r" onclick="CD=${c.id};render()"><span>${i+1}. ${E(c.jp||c.ro)} — ${E(c.me)}</span><b>${c.lp}x</b></div>`).join('')||'<p class="m">Belum ada data.</p>'}</div>`}
+function study(){if(S.i>=S.q.length){const done=S.n;return`<h2>Selesai 🎉</h2><div class="c">${done} kartu dipelajari. Semua hasil sudah tersimpan.</div><button class="b" onclick="go('home')">Kembali ke Home</button>`}
+ const c=D.cards.find(x=>x.id==S.q[S.i]);if(!c){S.i++;return study()}
+ return`<p class="m">${S.i+1} / ${S.q.length} <button class="b s sm" style="float:right" onclick="go('home')">Keluar</button></p><div class="c big">${E(c.jp||c.ro)}</div>`+(S.show?`<div class="c" style="text-align:center"><div style="font-size:24px;font-weight:700">${E(c.me)}</div><div class="m">${E(c.ro)} ${E(c.jp&&c.ro?'':'')}</div></div><div class="rt"><button class="b s" onclick="ans('lupa')">❌ Lupa</button><button class="b s" onclick="ans('sulit')">😓 Sulit</button><button class="b s" onclick="ans('ingat')">✓ Ingat</button><button class="b s" onclick="ans('mudah')">🔥 Mudah</button></div>`:`<button class="b" onclick="S.show=1;render()">TAMPILKAN JAWABAN</button>`)}
+function preview(){const r=IM.rows,n=x=>r.filter(y=>y.st==x).length,okc=r.filter(x=>!x.skip&&(x.st=='ok'||(x.st=='dup'&&IM.mode!='skip'))).length;
+ return`<h2>Import Preview</h2><div class="c">Total baris: ${r.length}<br>Berhasil: ${n('ok')}<br><span class="dp">Duplikat: ${n('dup')}</span><br><span class="er">Error: ${n('err')}</span></div>`+(n('dup')?`<div class="c">${n('dup')} kotoba sudah ada. Pilihan:<select onchange="setMode(this.value);render()"><option value="skip"${IM.mode=='skip'?' selected':''}>Skip (default)</option><option value="update"${IM.mode=='update'?' selected':''}>Update data</option><option value="dup"${IM.mode=='dup'?' selected':''}>Simpan sebagai duplicate</option></select></div>`:'')+
+ `<div class="sc">`+r.map((x,i)=>x.st=='err'?`<div class="c"><span class="er">Baris: tidak bisa dibaca (${E(x.msg)})</span><input id="r${i}" value="${E(x.raw)}"><button class="b sm" onclick="fixRow(${i})">Edit</button><button class="b s sm" onclick="skipRow(${i})">${x.skip?'Batal skip':'Skip'}</button></div>`:`<div class="r" style="${x.skip?'opacity:.4':''}"><span>${E(x.jp)} ${E(x.ro)} → ${E(x.me)} ${x.lv?'<span class="tag">'+x.lv+'</span>':''}</span><span class="${x.st=='dup'?'dp':''}">${x.st=='dup'?'Duplikat':'OK'}</span></div>`).join('')+`</div><button class="b" onclick="commit()">SIMPAN ${okc} KOTOBA</button><button class="b s" onclick="IM=null;render()">Batal</button>`}
+function detail(){const c=D.cards.find(x=>x.id==CD);if(!c){CD=null;return R()}const s=sc(c),hs=D.hist.filter(x=>x.c==c.id).slice().reverse(),ic={ingat:'✓ Ingat',lupa:'❌ Lupa',sulit:'😓 Sulit',mudah:'🔥 Mudah'};
+ return`<button class="b s sm" onclick="CD=null;CF=null;render()">← Kembali</button><h2>${E(c.jp||c.ro)}</h2><div class="m">${E(c.ro)}</div><div style="font-size:20px">${E(c.me)}</div><div class="c"><div class="r"><span>Memory Score</span><b>${s==null?'Belum ada data':s+'/100 • '+cat(s)}</b></div><div class="r"><span>Pertama dipelajari</span><span>${fd(c.first)}</span></div><div class="r"><span>Total review</span><span>${c.rc}</span></div><div class="r"><span>Ingat / Lupa / Sulit / Mudah</span><span>${c.ok} / ${c.wr} / ${c.hd} / ${c.ez}</span></div><div class="r"><span>Akurasi</span><span>${c.rc?Math.round(100*(c.ok+c.ez)/c.rc)+'%':'Belum ada data'}</span></div><div class="r"><span>Review terakhir</span><span>${fd(c.last)}</span></div><div class="r"><span>Review berikutnya</span><span>${fd(c.next)}</span></div><div class="r"><span>Interval</span><span>${c.iv} hari</span></div></div><h3>RIWAYAT</h3><div class="c">${hs.map(x=>`<div class="r"><span>${fd(x.at)}</span><span>${ic[x.r]}</span></div>`).join('')||'<span class="m">Belum ada data.</span>'}</div><h3>Edit</h3><div class="c">Japanese<input id="e1" value="${E(c.jp)}">Romaji<input id="e2" value="${E(c.ro)}">Arti<input id="e3" value="${E(c.me)}">Level<input id="e4" value="${E(c.lv)}">Tag<input id="e5" value="${E(c.tags)}"><button class="b" onclick="saveEdit(${c.id})">Simpan perubahan</button>${CF?`<p class="er">Hapus kartu ini beserta riwayatnya?</p><button class="b" style="background:#dc2626" onclick="delCard(${c.id})">Ya, hapus</button><button class="b s" onclick="CF=null;render()">Batal</button>`:`<button class="b s" onclick="CF=1;render()">Hapus kartu</button>`}</div>`}
+function saveEdit(id){const c=D.cards.find(x=>x.id==id),jp=$('#e1').value.trim(),ro=$('#e2').value.trim(),me=$('#e3').value.trim();if(!me||(!jp&&!ro)){toast('Kata dan arti tidak boleh kosong.');return}
+ c.jp=jp;c.ro=ro;c.me=me;c.lv=$('#e4').value.trim();c.tags=$('#e5').value.trim();save();toast('Tersimpan');render()}
+function delCard(id){D.cards=D.cards.filter(x=>x.id!=id);D.hist=D.hist.filter(x=>x.c!=id);save();CD=null;CF=null;toast('Kartu dihapus');render()}
+function mkBackup(){$('#bk').value=JSON.stringify({app:'kotoba-memory',v:1,at:Date.now(),data:D});$('#bk').select()}
+function cpBackup(){mkBackup();const t=$('#bk').value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Backup disalin')).catch(()=>{$('#bk').select();try{document.execCommand('copy');toast('Backup disalin')}catch(e){toast('Tekan lama teks lalu pilih Salin')}})}
+function restore1(){let o;try{o=JSON.parse($('#bk').value)}catch(e){toast('Teks backup tidak valid.');return}
+ if(!o||o.app!='kotoba-memory'||!o.data||!Array.isArray(o.data.cards)){toast('Ini bukan backup Kotoba Memory.');return}
+ $('#rs').innerHTML=`<p class="er">Data sekarang (${D.cards.length} kartu) akan diganti backup (${o.data.cards.length} kartu). Lanjut?</p><button class="b" onclick="restore2()">Ya, pulihkan</button>`;window._bk=o}
+function restore2(){const d=window._bk.data;D=Object.assign({cards:[],batches:[],hist:[],set:{target:50,theme:'system'},nid:1,bid:1},d);save();applyTheme();toast('Backup dipulihkan');go('home')}
+function applyTheme(){const t=D.set.theme;if(t=='system')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t)}
+const NV=[['home','Home'],['study','Belajar'],['words','Kotoba'],['stats','Statistik'],['batch','Batch'],['set','Setelan']];
+function render(){$('#app').innerHTML=R();$('#nav').innerHTML=NV.map(n=>`<button class="${(V==n[0]||(V=='imp'&&n[0]=='batch'))&&!S?'on':''}" onclick="go('${n[0]}')">${n[1]}</button>`).join('');if(V=='words'&&!S&&!CD&&!IM)renderList();window.scrollTo(0,0)}
+applyTheme();render();
+</script></body></html>
