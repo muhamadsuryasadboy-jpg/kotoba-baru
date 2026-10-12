@@ -1,30 +1,476 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Kotoba Memory</title>
-<style>
-:root{--bg:#f6f6f3;--fg:#1d1d1b;--cd:#fff;--mu:#6b6b66;--ac:#c2410c;--bd:#ddd9d0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161615;--fg:#eeeee9;--cd:#232321;--mu:#a09f98;--ac:#fb923c;--bd:#3a3935}}
-:root[data-theme="dark"]{--bg:#161615;--fg:#eeeee9;--cd:#232321;--mu:#a09f98;--ac:#fb923c;--bd:#3a3935}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-#app{max-width:640px;margin:0 auto;padding:12px 12px 84px}
-nav{position:fixed;left:0;right:0;bottom:0;background:var(--cd);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
-nav button{flex:1;border:0;background:none;color:var(--mu);padding:10px 2px;font-size:12px}nav button.on{color:var(--ac);font-weight:700}
-h2{margin:6px 0 10px;font-size:20px}h3{margin:14px 0 6px;font-size:15px;color:var(--mu)}
-.c{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:8px 0}
-.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.n{font-size:26px;font-weight:700}.m{color:var(--mu);font-size:13px}
-button.b,.b{display:block;width:100%;border:0;border-radius:12px;padding:14px;margin:8px 0;background:var(--ac);color:#fff;font-size:16px;font-weight:700}
-button.s{background:var(--cd);color:var(--fg);border:1px solid var(--bd)}button.sm{display:inline-block;width:auto;padding:8px 12px;font-size:14px;margin:4px 4px 4px 0}
-input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--cd);color:var(--fg);font:inherit;margin:4px 0}
-textarea{min-height:150px}.r{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
-.big{font-size:34px;text-align:center;padding:36px 8px;word-break:break-word}.rt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.bar{height:8px;border-radius:4px;background:var(--ac);min-width:2px}.tag{font-size:12px;padding:2px 8px;border-radius:9px;border:1px solid var(--bd);color:var(--mu)}
-.er{color:#dc2626}.dp{color:#ca8a04}.sc{overflow-x:auto}#t{position:fixed;left:12px;right:12px;bottom:78px;background:#222;color:#fff;padding:10px;border-radius:10px;display:none;z-index:9}
-</style></head><body><div id="app"></div><div id="t"></div>
-<nav id="nav"></nav>
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Kotoba Memory</title><style>
+/* Konsep: langit malam yang tenang. Bulan emas sebagai aksen, bintang sebagai progres.
+   Semua warna ada di token. Tema bawaan "semesta" (gelap), plus mode polos terang/gelap/sistem. */
+:root{--bg:#070a1c;--sky1:#060917;--sky2:#0b1030;--sky3:#17103a;--neb1:rgba(120,110,255,.34);--neb2:rgba(45,212,191,.18);
+--fg:#e8ebff;--mu:#a0a8d0;--cd:rgba(15,20,50,.6);--cd2:rgba(31,40,86,.6);--bd:rgba(148,163,255,.22);
+--ac:#f2d489;--acf:#1c1604;--ok2:#67e8f9;--ok:#6ee7b7;--hd:#fbbf24;--bad:#fb7185;
+--starlit:#c7d2fe;--stargold:#fcd34d;--staroff:rgba(165,180,255,.5);--cline:rgba(190,205,255,.85);
+--moonlit:#f4eed7;--moondark:#1a2047;--moonc:rgba(120,110,90,.28);--glow:rgba(244,238,215,.38);
+--nav:rgba(10,14,38,.82);--ac2:#e0a85a;--shd:0 10px 30px rgba(0,0,0,.30);--tbg:#e8ebff;--tfg:#070a1c;--er:#fb7185;--dp:#fbbf24;
+--fd:"Instrument Serif",Georgia,"Times New Roman",serif;
+--fb:Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+--fj:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+color-scheme:dark}
+:root[data-theme="light"]{--bg:#f6f4ee;--fg:#1d1c2a;--mu:#5f6078;--cd:#fff;--cd2:#f0eee6;--bd:#dcd8cc;--ac:#7a4a0a;--acf:#fff;--ok2:#0e7490;--ok:#047857;--hd:#b45309;--bad:#be123c;--starlit:#4f46e5;--stargold:#b45309;--staroff:rgba(80,80,120,.2);--cline:rgba(80,80,140,.4);--moonlit:#e9dfb8;--moondark:#cfd3e6;--moonc:rgba(120,110,90,.25);--glow:rgba(0,0,0,0);--nav:rgba(255,255,255,.88);--ac2:#c2760f;--shd:0 6px 20px rgba(70,55,20,.10);--tbg:#1d1c2a;--tfg:#fff;--er:#be123c;--dp:#b45309;color-scheme:light}
+@media (prefers-color-scheme:light){:root[data-theme="system"]{--bg:#f6f4ee;--fg:#1d1c2a;--mu:#5f6078;--cd:#fff;--cd2:#f0eee6;--bd:#dcd8cc;--ac:#7a4a0a;--acf:#fff;--ok2:#0e7490;--ok:#047857;--hd:#b45309;--bad:#be123c;--starlit:#4f46e5;--stargold:#b45309;--staroff:rgba(80,80,120,.2);--cline:rgba(80,80,140,.4);--moonlit:#e9dfb8;--moondark:#cfd3e6;--moonc:rgba(120,110,90,.25);--glow:rgba(0,0,0,0);--nav:rgba(255,255,255,.88);--ac2:#c2760f;--shd:0 6px 20px rgba(70,55,20,.10);--tbg:#1d1c2a;--tfg:#fff;--er:#be123c;--dp:#b45309;color-scheme:light}}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 var(--fb);-webkit-text-size-adjust:100%}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+:root[data-theme="system"] #sky,:root[data-theme="light"] #sky,:root[data-theme="dark"] #sky{display:none}
+
+#sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+background:radial-gradient(70% 45% at 85% 8%,var(--neb1),transparent 70%),radial-gradient(60% 40% at 5% 90%,var(--neb2),transparent 70%),linear-gradient(180deg,var(--sky1),var(--sky2) 55%,var(--sky3))}
+#sky .st{position:absolute;left:0;top:0;border-radius:50%;background:transparent}
+#sky .s1{width:1px;height:1px}
+#sky .s2{width:2px;height:2px;animation:tw 4s ease-in-out infinite alternate}
+#sky .s3{width:2px;height:2px;animation:tw 6s ease-in-out -2s infinite alternate}
+@keyframes tw{from{opacity:.25}to{opacity:1}}
+html.calm #sky .st{animation:none}
+html.lite #sky .st{animation:none}
+@media (prefers-reduced-motion:reduce){#sky .st{animation:none}}
+#sky .con{position:absolute;opacity:.85;filter:drop-shadow(0 0 5px var(--cline))}
+#sky .con svg{display:block;width:100%;height:auto}
+#sky .c1{right:2%;top:33%;width:min(46vw,230px)}
+#sky .c2{left:1%;bottom:15%;width:min(36vw,170px)}
+#sky .c3{left:4%;top:47%;width:min(30vw,140px)}
+#skymoon{position:absolute;right:14px;top:14px;line-height:0;filter:drop-shadow(0 0 14px var(--glow))}
+
+#app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:14px 16px 96px}
+body.full #app{padding-bottom:170px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--nav);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;color:var(--mu);padding:13px 2px 11px;font:inherit;font-size:12px;position:relative;cursor:pointer}
+nav button.on{color:var(--ac);font-weight:700}
+nav button.on::before{content:"";position:absolute;top:0;left:30%;right:30%;height:2px;background:var(--ac);border-radius:0 0 2px 2px}
+
+h1,h2{font-family:var(--fd);font-weight:400;text-wrap:balance}
+h1{margin:2px 0 4px;font-size:36px;line-height:1.08}
+h2{margin:6px 0 12px;font-size:30px;line-height:1.1}
+h3{margin:18px 0 6px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);font-weight:600}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ac);font-weight:600}
+.hero{padding:6px 76px 4px 0}
+.moonl{font-size:13px;color:var(--mu)}
+.m{color:var(--mu);font-size:13px}
+.ct{font-weight:600;margin:0 0 2px}
+.cs{color:var(--mu);font-size:13px;margin:0 0 8px}
+
+.c{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:14px;margin:10px 0}
+.lk{cursor:pointer}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g .c{margin:0}
+.n{font:400 36px/1.05 var(--fd);font-variant-numeric:tabular-nums}
+.n small{font:400 14px var(--fb);color:var(--mu)}
+.r{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd);font-variant-numeric:tabular-nums}
+.r>*{min-width:0}
+.r:last-child{border-bottom:0}
+.goal{display:flex;gap:16px;align-items:center}
+.goal .gm{flex:0 0 auto;line-height:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:3px 10px;border:1px solid var(--bd);border-radius:999px;color:var(--fg)}
+.chip svg{color:var(--ac)}
+
+button{font-family:inherit}
+.b{display:block;width:100%;border:0;border-radius:14px;padding:15px;margin:8px 0;background:var(--ac);color:var(--acf);font:700 16px var(--fb);cursor:pointer}
+.b.s{background:var(--cd2);color:var(--fg);border:1px solid var(--bd)}
+.b.dn{background:var(--bad);color:var(--acf)}
+.b.sm{display:inline-block;width:auto;padding:9px 14px;font-size:14px;margin:4px 6px 4px 0}
+.b .bn{display:inline-block;margin-left:6px;padding:0 9px;border-radius:999px;background:var(--acf);color:var(--ac);font-size:13px}
+input,select,textarea{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--cd2);color:var(--fg);font:inherit;margin:4px 0}
+textarea{min-height:150px}
+.ck{display:flex;gap:10px;align-items:center;margin:12px 0}
+.ck input{width:20px;height:20px;margin:0;accent-color:var(--ac)}
+.tag{font-size:12px;padding:2px 8px;border-radius:9px;border:1px solid var(--bd);color:var(--mu)}
+.er{color:var(--er)}.dp{color:var(--dp)}.sc{overflow-x:auto}
+#t{position:fixed;left:16px;right:16px;bottom:88px;max-width:608px;margin:0 auto;background:var(--tbg);color:var(--tfg);padding:11px 14px;border-radius:12px;display:none;z-index:9}
+.ic{vertical-align:-3px}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:4px 0 10px;padding-bottom:2px}
+.tabs button{flex:0 0 auto;border:1px solid var(--bd);background:var(--cd);color:var(--mu);padding:8px 14px;border-radius:999px;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--ac);color:var(--acf);border-color:var(--ac);font-weight:700}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:999px;overflow:hidden;float:right}
+.seg button{border:0;background:none;color:var(--mu);padding:4px 12px;font-size:13px;cursor:pointer}
+.seg button.on{background:var(--ac);color:var(--acf);font-weight:700}
+
+.top{display:flex;align-items:center;gap:12px;margin:2px 0 6px}
+.pg{flex:1;height:6px;border-radius:3px;background:var(--staroff);overflow:hidden}
+.pg i{display:block;height:100%;border-radius:3px;background:var(--ac)}
+.tools{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px}
+.ib{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);background:var(--cd);color:var(--fg);padding:8px 12px;border-radius:12px;font-size:14px;cursor:pointer}
+.ib:disabled{opacity:.4;cursor:default}
+.fc{position:relative;text-align:center;padding:34px 16px 26px;min-height:240px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.jp{font:600 46px/1.2 var(--fj);word-break:break-word}
+.mean{font:400 32px/1.25 var(--fd);word-break:break-word}
+.ro{font-size:18px;color:var(--mu);letter-spacing:.02em}
+.sep{height:1px;background:var(--bd);margin:6px 28px}
+.spk{position:absolute;right:8px;top:8px;border:0;background:none;color:var(--mu);padding:10px;border-radius:12px;cursor:pointer}
+.act{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--nav);border-top:1px solid var(--bd);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.act>div{max-width:608px;margin:0 auto}
+.act .b{margin:0}
+.rt{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rb{border:1px solid var(--bd);border-bottom-width:3px;background:var(--cd2);color:var(--fg);border-radius:14px;padding:10px 2px;display:flex;flex-direction:column;gap:2px;align-items:center;cursor:pointer}
+.rb b{font-size:15px}
+.rb small{font-size:11px;color:var(--mu)}
+.r-lupa{border-bottom-color:var(--bad)}.r-sulit{border-bottom-color:var(--hd)}.r-ingat{border-bottom-color:var(--ok)}.r-mudah{border-bottom-color:var(--ok2)}
+.op{display:block;width:100%;text-align:left;margin:8px 0;padding:14px;border-radius:14px;border:1px solid var(--bd);background:var(--cd);color:var(--fg);font-size:17px;cursor:pointer}
+.op.ok{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
+.op.no{border-color:var(--bad);box-shadow:inset 5px 0 0 var(--bad)}
+
+.ch{display:block;width:100%;height:auto;overflow:visible}
+.tx{font-size:9px;fill:var(--mu);font-family:var(--fb);font-variant-numeric:tabular-nums}
+.lg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--mu);margin-top:8px}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.stk{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--staroff)}
+.stk i{display:block;height:100%}
+.hb{display:grid;grid-template-columns:78px 1fr 70px;gap:8px;align-items:center;padding:5px 0;font-size:14px}
+.hb .hl{color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .ht{height:10px;border-radius:5px;background:var(--staroff);overflow:hidden}
+.hb .ht i{display:block;height:100%;border-radius:5px}
+.hb .hv{text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+.tbw{overflow-x:auto}
+.tb{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.tb th{color:var(--mu);font-weight:500;text-align:right;padding:6px 4px}
+.tb td{padding:8px 4px;text-align:right;border-top:1px solid var(--bd)}
+.tb td:first-child,.tb th:first-child{text-align:left}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cg .c{margin:0;padding:10px;text-align:center}
+.cg svg{display:block;width:100%;max-width:150px;height:auto;margin:0 auto 6px}
+.big{font-size:34px;text-align:center;padding:36px 8px;word-break:break-word}
+.bar{height:8px;border-radius:4px;background:var(--ac);min-width:2px}
+body.full #skymoon{display:none}
+
+#mw{position:absolute;left:-30%;top:22%;width:160%;height:150px;transform:rotate(-26deg);filter:blur(10px);opacity:.9;
+background:linear-gradient(180deg,transparent,rgba(170,185,255,.16) 35%,rgba(235,220,255,.24) 50%,rgba(170,185,255,.16) 65%,transparent)}
+#mw::after{content:"";position:absolute;inset:30% 8%;background:radial-gradient(40% 50% at 30% 50%,rgba(255,236,190,.22),transparent),radial-gradient(35% 45% at 72% 50%,rgba(190,170,255,.2),transparent)}
+#planet{position:absolute;right:92px;top:22px;width:46px;height:35px;line-height:0;opacity:.92;filter:drop-shadow(0 0 10px rgba(242,212,137,.25))}
+body.full #planet{opacity:.5}
+
+/* ---- mini, catatan, latihan ---- */
+.mini svg{display:block;width:100%;height:auto}
+.note{margin-top:8px;padding:8px 12px;border-radius:12px;background:var(--cd2);border:1px solid var(--bd);font-size:14px;color:var(--fg);text-align:left}
+.ti{font-size:22px;text-align:center;padding:14px;margin:6px 0}
+.res{font-weight:700;font-size:18px}.res.ok{color:var(--ok)}.res.no{color:var(--bad)}
+.mtg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mtg>div{display:flex;flex-direction:column;gap:8px;min-width:0}
+.mt{border:1px solid var(--bd);background:var(--cd);color:var(--fg);border-radius:14px;padding:12px 8px;min-height:62px;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;word-break:break-word}
+.mt .jj{font:600 20px var(--fj)}.mt small{color:var(--mu);font-size:12px}
+.mt.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
+.mt.ok{border-color:var(--ok);opacity:.35;pointer-events:none}
+.mt.no{border-color:var(--bad);background:rgba(251,113,133,.25)}
+.thm{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.thm button{height:62px;border-radius:14px;border:2px solid var(--bd);cursor:pointer;display:flex;align-items:flex-end;padding:6px;text-align:left}
+.thm button.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
+.thm span{background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:2px 8px;font-size:12px}
+/* ---- tema latar ---- */
+#fx,#aur{display:none}
+#fx{position:absolute;inset:0}
+#fx i{position:absolute;left:var(--x);top:var(--y)}
+:root[data-theme="aurora"] #aur,:root[data-theme="sakura"] #fx,:root[data-theme="ocean"] #fx,:root[data-theme="forest"] #fx{display:block}
+:root[data-theme="sakura"] #sky .st,:root[data-theme="ocean"] #sky .st,:root[data-theme="sakura"] #mw,:root[data-theme="ocean"] #mw,:root[data-theme="aurora"] #mw,:root[data-theme="forest"] #mw,:root[data-theme="sakura"] #planet,:root[data-theme="ocean"] #planet,:root[data-theme="aurora"] #planet,:root[data-theme="forest"] #planet,:root[data-theme="sakura"] #skycon,:root[data-theme="ocean"] #skycon{display:none}
+#aur{position:absolute;left:-25%;right:-25%;top:3%;height:44%;filter:blur(24px);opacity:.8;transform:skewY(-8deg);animation:aur 16s ease-in-out infinite alternate;
+background:linear-gradient(100deg,transparent 8%,rgba(52,211,153,.6) 28%,rgba(45,212,191,.4) 46%,rgba(139,92,246,.5) 66%,transparent 88%)}
+#aur::after{content:"";position:absolute;left:10%;right:10%;top:30%;bottom:-10%;background:linear-gradient(80deg,transparent,rgba(110,231,183,.45) 40%,rgba(167,139,250,.4) 70%,transparent);filter:blur(10px)}
+@keyframes aur{from{transform:skewY(-8deg) translateX(-7%)}to{transform:skewY(-3deg) translateX(7%)}}
+:root[data-theme="sakura"] #fx i{top:-5vh;width:11px;height:8px;border-radius:70% 0 70% 0;background:#ffc2d6;opacity:.85;animation:fall var(--d) linear var(--l) infinite}
+@keyframes fall{from{transform:translate(0,0) rotate(0)}to{transform:translate(70px,112vh) rotate(420deg)}}
+:root[data-theme="ocean"] #fx i{top:auto;bottom:-6vh;width:var(--s);height:var(--s);border-radius:50%;border:1px solid rgba(200,242,255,.7);background:rgba(200,242,255,.08);animation:rise var(--d) linear var(--l) infinite}
+@keyframes rise{from{transform:translate(0,0)}to{transform:translate(20px,-112vh)}}
+:root[data-theme="forest"] #fx i{width:4px;height:4px;border-radius:50%;background:#eaff9c;box-shadow:0 0 9px 4px rgba(225,255,140,.6);animation:fly var(--d) ease-in-out var(--l) infinite alternate}
+@keyframes fly{from{transform:translate(0,0);opacity:.15}to{transform:translate(34px,-46px);opacity:1}}
+html.calm #fx i,html.calm #aur{animation:none}
+html.lite #fx i,html.lite #aur{animation:none}
+@media (prefers-reduced-motion:reduce){#fx i,#aur{animation:none}}
+:root[data-theme="aurora"]{--ac2:#3dd6c4;--bg:#05161d;--sky1:#030f16;--sky2:#06262f;--sky3:#0a1c38;--neb1:rgba(52,211,153,.25);--neb2:rgba(139,92,246,.25);--fg:#e8fff7;--mu:#a3cfc3;--cd:rgba(6,34,42,.55);--cd2:rgba(14,66,70,.6);--bd:rgba(120,235,200,.28);--ac:#7ef0c0;--acf:#03211a;--starlit:#c4f8e8;--stargold:#fde68a;--staroff:rgba(150,240,215,.5);--cline:rgba(180,255,235,.85);--nav:rgba(4,20,27,.94);--tbg:#e8fff7;--tfg:#05161d;color-scheme:dark}
+:root[data-theme="sakura"]{--ac2:#ff86ad;--bg:#2a1030;--sky1:#220c2c;--sky2:#4a1d4f;--sky3:#9b3f66;--neb1:rgba(255,160,200,.30);--neb2:rgba(255,200,140,.18);--fg:#fff0f5;--mu:#e6bdd0;--cd:rgba(50,16,52,.5);--cd2:rgba(110,40,90,.55);--bd:rgba(255,190,215,.32);--ac:#ffb7c9;--acf:#3a0f22;--starlit:#ffd9e6;--stargold:#ffe08a;--staroff:rgba(255,200,225,.5);--cline:rgba(255,220,235,.85);--moonlit:#fff4dd;--moondark:#5a2552;--glow:rgba(255,230,200,.45);--nav:rgba(40,12,44,.94);--tbg:#fff0f5;--tfg:#2a1030;color-scheme:dark}
+:root[data-theme="forest"]{--ac2:#8fd14f;--bg:#06170f;--sky1:#04130c;--sky2:#0b2618;--sky3:#143a27;--neb1:rgba(120,200,110,.22);--neb2:rgba(60,160,140,.2);--fg:#eefae8;--mu:#aecaa8;--cd:rgba(8,36,22,.55);--cd2:rgba(22,70,44,.6);--bd:rgba(170,230,150,.28);--ac:#b6e36a;--acf:#10200a;--starlit:#e1f8b4;--stargold:#fde68a;--staroff:rgba(190,235,160,.5);--cline:rgba(215,250,170,.85);--nav:rgba(5,24,15,.94);--tbg:#eefae8;--tfg:#06170f;color-scheme:dark}
+:root[data-theme="ocean"]{--ac2:#4aa8ff;--bg:#03203d;--sky1:#03142b;--sky2:#06335c;--sky3:#0a6a92;--neb1:rgba(110,220,255,.26);--neb2:rgba(80,140,255,.2);--fg:#e9f9ff;--mu:#a5d0e4;--cd:rgba(4,36,70,.5);--cd2:rgba(10,80,120,.55);--bd:rgba(130,215,255,.3);--ac:#6fe3ff;--acf:#022030;--starlit:#c6f0ff;--stargold:#fde68a;--staroff:rgba(170,230,255,.5);--cline:rgba(200,242,255,.85);--nav:rgba(3,22,44,.94);--tbg:#e9f9ff;--tfg:#03203d;color-scheme:dark}
+body.full #planet{display:none}
+
+/* ================= v5: tampilan lebih menarik ================= */
+:root{--r:20px}
+#app{padding:16px 16px 118px}
+body.full #app{padding-bottom:176px}
+#app.ani>*{animation:up .45s cubic-bezier(.2,.7,.2,1) both}
+#app.ani>*:nth-child(2){animation-delay:.04s}#app.ani>*:nth-child(3){animation-delay:.08s}#app.ani>*:nth-child(4){animation-delay:.12s}#app.ani>*:nth-child(5){animation-delay:.16s}#app.ani>*:nth-child(n+6){animation-delay:.2s}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+html.calm #app.ani>*{animation:none}
+html.lite #app.ani>*{animation:none}
+@media (prefers-reduced-motion:reduce){#app.ani>*{animation:none}}
+/* kartu kaca */
+.c{border-radius:var(--r);background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,0) 55%),var(--cd);border:1px solid var(--bd);box-shadow:var(--shd),inset 0 1px 0 rgba(255,255,255,.10);-webkit-backdrop-filter:blur(10px) saturate(1.25);backdrop-filter:blur(10px) saturate(1.25);padding:16px}
+html.calm .c{-webkit-backdrop-filter:none;backdrop-filter:none}
+html.lite .c{-webkit-backdrop-filter:none;backdrop-filter:none}
+.c.lk:active,.op:active,.b:active,.rb:active,.ib:active{transform:scale(.98)}
+.c.lk,.op,.b,.rb,.ib{transition:transform .12s ease}
+/* hero */
+.hero{padding:10px 90px 6px 0}
+h1{font-size:42px;line-height:1.05;background:linear-gradient(95deg,var(--fg) 30%,var(--ac));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.eyebrow{display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:18px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--ac),transparent)}
+h2{font-size:34px;background:linear-gradient(95deg,var(--fg) 40%,var(--ac));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+h3{display:flex;align-items:center;gap:8px;margin:22px 2px 8px}
+h3::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--ac)}
+/* target ring */
+.goal{gap:18px}
+.ring{position:relative;width:96px;height:96px}
+.ring>svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;line-height:0}
+.rtk{fill:none;stroke:var(--staroff);stroke-width:5;opacity:.5}
+.rpg{fill:none;stroke:var(--ac);stroke-width:5;stroke-linecap:round;filter:drop-shadow(0 0 5px var(--ac));transition:stroke-dasharray .8s ease}
+.goal .n{font-size:42px}
+.chip{background:rgba(255,255,255,.05);border-radius:999px}
+/* kotak angka */
+.tiles .c{position:relative;overflow:hidden;padding:16px 14px 14px}
+.tiles .c::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:var(--tc,var(--ac));opacity:.9}
+.tiles .c::after{content:"";position:absolute;right:-18px;top:-18px;width:70px;height:70px;border-radius:50%;background:var(--tc,var(--ac));opacity:.12;filter:blur(2px)}
+.t1{--tc:var(--starlit)}.t2{--tc:var(--ok2)}.t3{--tc:var(--ok)}.t4{--tc:var(--bad)}
+.tiles .n{color:var(--fg)}
+/* tombol */
+.b{border-radius:16px;padding:16px;background:linear-gradient(135deg,var(--ac),var(--ac2));box-shadow:0 10px 24px -10px var(--ac),inset 0 1px 0 rgba(255,255,255,.35);letter-spacing:.01em}
+.b.s{background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02)),var(--cd2);color:var(--fg);box-shadow:none;border:1px solid var(--bd)}
+.b.dn{background:var(--bad)}
+.b .bn{background:rgba(0,0,0,.28);color:#fff}
+.pg{height:8px}
+.pg i{background:linear-gradient(90deg,var(--ac2),var(--ac));box-shadow:0 0 10px -1px var(--ac)}
+.stk{height:18px}
+.tabs button{backdrop-filter:blur(6px)}
+.tabs button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));box-shadow:0 6px 16px -6px var(--ac)}
+.seg button.on{background:linear-gradient(135deg,var(--ac),var(--ac2))}
+.op{border-radius:16px;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,0)),var(--cd);box-shadow:var(--shd);padding:16px 16px 16px 18px;position:relative;border-left:3px solid var(--ac)}
+.op::after{content:"›";position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:26px;color:var(--ac);line-height:1}
+.op.ok::after,.op.no::after{content:""}
+.op b{font-size:17px}
+input,select,textarea{border-radius:14px;background:var(--cd2)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);outline-offset:1px}
+/* kartu belajar */
+.fc{border-radius:26px;min-height:270px;padding:40px 18px 30px;box-shadow:0 0 0 1px var(--bd),0 24px 60px -24px var(--ac),var(--shd)}
+.jp{font-size:52px;text-shadow:0 0 28px var(--glow)}
+.mean{font-size:34px}
+.sep{background:linear-gradient(90deg,transparent,var(--ac),transparent);height:1px;opacity:.6}
+.rb{border-radius:16px;padding:12px 2px;border-bottom-width:4px}
+.r-lupa{background:rgba(251,113,133,.16)}.r-sulit{background:rgba(251,191,36,.14)}.r-ingat{background:rgba(110,231,183,.14)}.r-mudah{background:rgba(103,232,249,.14)}
+.act{background:linear-gradient(180deg,transparent,var(--nav) 30%);border-top:0;backdrop-filter:blur(8px);padding-top:18px}
+/* menu bawah melayang */
+nav{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));border-radius:24px;border:1px solid var(--bd);padding:6px;gap:2px;background:var(--nav);box-shadow:0 14px 36px -10px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);max-width:616px;margin:0 auto}
+nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px 7px;border-radius:18px;font-size:11px}
+nav button.on{background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.03));color:var(--ac)}
+nav button.on::before{display:none}
+nav button.on svg{filter:drop-shadow(0 0 6px var(--ac))}
+#t{bottom:96px;border-radius:14px;box-shadow:var(--shd)}
+.r{padding:11px 0}
+.cg .c{padding:14px 10px}
+.hb .ht,.hb .ht i{height:12px;border-radius:6px}
+
+/* ================= v6: Galaxy Edition ================= */
+:root[data-theme="cosmos"]{--sky1:#04061f;--sky2:#0a0d3a;--sky3:#1b0f52;--neb1:rgba(120,95,255,.38);--neb2:rgba(40,150,255,.22);
+--cd:rgba(12,16,62,.62);--cd2:rgba(34,44,120,.6);--bd:rgba(112,130,255,.42);--ac:#6f7dff;--ac2:#4656f0;--acf:#fff;--ok2:#2de1d3;--ok:#34d399;
+--shd:0 0 24px -6px rgba(90,110,255,.5);--nav:rgba(8,11,46,.88);--cline:rgba(190,205,255,.85);--staroff:rgba(165,180,255,.5)}
+:root[data-theme="cosmos"] .pg i{background:linear-gradient(90deg,#2de1d3,#5b6cff);box-shadow:0 0 10px -1px #4da3ff}
+:root[data-theme="cosmos"] .b{box-shadow:0 10px 26px -8px #5b6cff,inset 0 1px 0 rgba(255,255,255,.3)}
+#skymoon,#planet{display:none}
+body.v-map #skymoon{display:block;top:10px;right:14px}
+#skymoon{transform:scale(.6);transform-origin:top right}
+#sky .con{opacity:.7}
+body.v-splash #skycon{display:none}
+/* header halaman */
+.hd{display:flex;align-items:center;gap:12px;margin:2px 0 16px}
+.hd h2{flex:1;margin:0;font:700 22px/1.2 var(--fb);background:none;-webkit-text-fill-color:var(--fg);color:var(--fg)}
+.hd .hr{display:flex;align-items:center;gap:8px;color:var(--mu)}
+.bk{width:40px;height:40px;border-radius:14px;border:1px solid var(--bd);background:var(--cd);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
+.hi{display:flex;width:40px;height:40px;border-radius:14px;border:1px solid var(--bd);background:var(--cd);align-items:center;justify-content:center;color:var(--ac)}
+/* segmen */
+.sg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border:1px solid var(--bd);background:var(--cd);border-radius:16px;margin:4px 0 12px}
+.sg button{border:0;background:none;color:var(--mu);padding:10px 4px;border-radius:12px;font:600 14px var(--fb);cursor:pointer}
+.sg button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:var(--acf);box-shadow:0 6px 16px -6px var(--ac)}
+/* beranda */
+.prof{display:flex;align-items:center;gap:14px;margin:4px 0 8px}
+.av{flex:0 0 52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:radial-gradient(circle at 30% 25%,#8b7bff,#3a46d8 70%);border:2px solid rgba(190,200,255,.6);box-shadow:0 0 18px -2px var(--ac)}
+.av.big{flex-basis:68px;height:68px}
+.pi{flex:1;min-width:0}
+.pn{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.pn b{font-size:18px}.lv{color:var(--ac);font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:3px}
+.xp{margin-left:auto;font-size:12px;color:var(--mu);white-space:nowrap}
+.quote{margin:0 2px 12px;font-style:italic;color:var(--mu);font-size:14px}
+.tot{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.big2{font:700 44px/1.05 var(--fb);font-variant-numeric:tabular-nums}
+.leg2{display:grid;gap:6px;min-width:128px}
+.leg2>div,.leg3>div{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;font-size:14px}
+.leg2 i,.leg3 i{width:10px;height:10px;border-radius:50%}
+.leg2 b,.leg3 b{font-variant-numeric:tabular-nums}
+.tg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.tile{border:1px solid var(--bd);background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,0) 60%),var(--cd);box-shadow:var(--shd);border-radius:20px;padding:14px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--fg);font:600 13px var(--fb);cursor:pointer}
+.ti2{position:relative;width:46px;height:46px;border-radius:15px;display:flex;align-items:center;justify-content:center;color:var(--tc,var(--ac));background:color-mix(in srgb,var(--tc,var(--ac)) 18%,transparent);border:1px solid color-mix(in srgb,var(--tc,var(--ac)) 45%,transparent)}
+.nb{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;border-radius:10px;background:var(--bad);color:#fff;font:700 11px/20px var(--fb);text-align:center;padding:0 5px;font-style:normal}
+.r2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+/* baris menu */
+.row,.row2>summary{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1px solid var(--bd);background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,0) 60%),var(--cd);box-shadow:var(--shd);border-radius:18px;padding:12px 14px;margin:8px 0;color:var(--fg);cursor:pointer;list-style:none}
+.row2>summary::-webkit-details-marker{display:none}
+.row2{margin:8px 0}.row2>summary{margin:0}
+.row2[open]>summary svg:last-child{transform:rotate(90deg)}
+.ri{flex:0 0 42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--tc,var(--ac));background:color-mix(in srgb,var(--tc,var(--ac)) 16%,transparent);border:1px solid color-mix(in srgb,var(--tc,var(--ac)) 40%,transparent)}
+.rt2{flex:1;min-width:0;display:flex;flex-direction:column}
+.rt2 b{font-size:16px}.rt2 small{color:var(--mu);font-size:13px}
+.row>svg:last-child,.row2>summary>svg:last-child{color:var(--mu);flex:0 0 auto}
+.gb{padding:12px 4px 4px}
+.gb p{margin:6px 0}
+/* review */
+.r3{display:flex;justify-content:space-around;text-align:center}
+.er{color:var(--bad)}
+.chs{display:flex;gap:8px;justify-content:space-between}
+.chs button{flex:1;height:44px;border-radius:50%;max-width:48px;border:1px solid var(--bd);background:var(--cd2);color:var(--fg);font:700 14px var(--fb);cursor:pointer}
+.chs button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:var(--acf);box-shadow:0 0 16px -2px var(--ac)}
+/* statistik */
+.dn{display:flex;align-items:center;gap:16px}
+.dw{position:relative;flex:0 0 130px;height:130px}
+.dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.dc b{font:700 28px var(--fb)}
+.leg3{flex:1;display:grid;gap:8px}
+.leg3>div{grid-template-columns:12px 1fr auto auto}.leg3 small{color:var(--mu);width:34px;text-align:right}
+.av3 .n{font-size:30px}
+.lvr{display:grid;grid-template-columns:34px 1fr 96px;gap:10px;align-items:center;padding:7px 0}
+.lvn{font-weight:700;font-size:14px}.lvv{font-size:13px;text-align:right;white-space:nowrap}.lvv small{color:var(--mu)}
+/* peta galaksi */
+.gc{padding:6px;cursor:pointer}
+.gal{display:block;width:100%;height:auto}
+/* profil, pencapaian */
+.pc{display:flex;gap:16px;align-items:center}
+.ft{text-align:center}.fm{filter:drop-shadow(0 0 18px var(--stargold))}
+.fm svg{width:92px!important;height:92px!important}
+.rw{display:flex;gap:14px;align-items:center}
+.cry{filter:drop-shadow(0 0 12px var(--ac))}
+.dm{padding:0;overflow:hidden}.tor{display:block;width:100%;height:auto;background:linear-gradient(180deg,rgba(80,60,200,.35),transparent)}
+.dt{padding:16px}
+.gr{position:relative;display:inline-block;width:210px;height:210px}
+.gr svg{display:block;transform:none}.gt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gt .n{font-size:40px}
+/* game */
+.gg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0}
+.gt2{border:1px solid var(--bd);background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,0) 60%),var(--cd);box-shadow:var(--shd);border-radius:20px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--fg);cursor:pointer;min-height:132px;justify-content:center}
+.gt2 small{color:var(--mu)}.gt2 .ti2{width:56px;height:56px;border-radius:18px}
+.hs{display:flex;align-items:center;gap:12px;color:var(--stargold)}.hs span{flex:1;color:var(--fg);font-weight:600}.hs b{font:700 22px var(--fb);color:var(--stargold)}
+.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mc{aspect-ratio:1;border:1px solid var(--bd);background:var(--cd2);color:var(--ac);border-radius:14px;font:600 12px/1.15 var(--fb);padding:4px;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word;cursor:pointer}
+.mc.jj{font:600 15px var(--fj)}
+.mc.ok{border-color:var(--ok);color:var(--fg);opacity:.5;pointer-events:none}.mc.no{border-color:var(--bad);background:rgba(251,113,133,.25)}
+.mc:not(.ok):not(.no){color:var(--fg)}
+/* AI */
+.chat{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.bub{display:flex;gap:10px;max-width:92%;padding:12px 14px;border-radius:18px;font-size:15px;line-height:1.45;border:1px solid var(--bd)}
+.bub.a{background:var(--cd);align-self:flex-start;border-top-left-radius:6px}.bub.u{background:linear-gradient(135deg,var(--ac),var(--ac2));color:var(--acf);align-self:flex-end;border-top-right-radius:6px;border-color:transparent}
+.bi{flex:0 0 auto;color:var(--ac)}
+.sugs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}
+.sugs button{border:1px solid var(--bd);background:var(--cd);color:var(--ac);border-radius:999px;padding:8px 14px;font:500 13px var(--fb);cursor:pointer}
+.sr{display:flex;align-items:center;gap:10px;border:1px solid var(--bd);background:var(--cd);border-radius:14px;padding:0 12px;margin:4px 0 10px}
+.sr input{border:0;background:none;margin:0;padding:12px 0}.sr svg{color:var(--mu);flex:0 0 auto}
+.send{border:0;border-radius:12px;width:38px;height:38px;background:linear-gradient(135deg,var(--ac),var(--ac2));color:var(--acf);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
+/* daftar kata */
+.wr{display:flex;align-items:center;gap:12px;padding:12px;margin:8px 0;border:1px solid var(--bd);border-radius:16px;background:var(--cd);cursor:pointer}
+.wi{flex:0 0 38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
+.wi.hafal{background:#16a36a}.wi.lupa{background:#e0425a}.wi.baru{background:#3b6cf0}.wi.belajar{background:#d4930a}
+.wt{flex:1;min-width:0;display:flex;flex-direction:column}.wj{font:600 18px var(--fj)}
+.wtag{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid}
+.wtag.hafal{color:var(--ok);border-color:var(--ok)}.wtag.lupa{color:var(--bad);border-color:var(--bad)}.wtag.baru{color:var(--ok2);border-color:var(--ok2)}.wtag.belajar{color:var(--hd);border-color:var(--hd)}
+/* impor, form */
+.drop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:28px 16px;border:2px dashed var(--bd);border-radius:20px;background:var(--cd);color:var(--ac);cursor:pointer;text-align:center;margin:10px 0}
+.drop b{color:var(--fg);font-size:17px}
+.fe{display:flex;gap:10px;align-items:center;padding:12px 14px;margin:6px 0}.fe svg{color:var(--ok)}
+/* tata bahasa */
+.gd{border:1px solid var(--bd);border-radius:16px;background:var(--cd);margin:8px 0;overflow:hidden}
+.gd>summary{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;list-style:none}
+.gd>summary::-webkit-details-marker{display:none}
+.gn{flex:0 0 26px;color:var(--mu);font-variant-numeric:tabular-nums}
+.gd summary b{flex:1}
+.ck2{width:30px;height:30px;border-radius:50%;border:2px solid var(--bd);background:none;color:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ck2.on{background:var(--ok);border-color:var(--ok);color:#06231a}
+.gd .gb{padding:0 14px 12px}
+.ex{padding:8px 0;border-top:1px solid var(--bd)}.jpx{font:600 18px var(--fj)}
+/* kartu belajar */
+.lvb{position:absolute;left:14px;top:14px;padding:3px 10px;border-radius:999px;font:700 12px var(--fb);color:#fff;background:linear-gradient(135deg,var(--ac),var(--ac2));box-shadow:0 0 12px -2px var(--ac)}
+.fc{position:relative}
+/* splash */
+.spl{position:fixed;inset:0;z-index:2;overflow:hidden;display:flex;flex-direction:column}
+.spt{position:relative;z-index:2;padding:11vh 28px 0}
+.logo{margin:0;font:italic 400 64px/.95 var(--fd);color:#fff;text-shadow:0 0 28px rgba(140,150,255,.8);background:none;-webkit-text-fill-color:#fff}
+.logo span{display:inline-block;margin-left:24px}
+.tag2{margin:18px 0 0;font-size:15px;line-height:1.5;color:#cfd6ff}
+.spc{position:absolute;right:6%;top:6%;width:min(40vw,170px);opacity:.9}
+.spc2{position:absolute;left:4%;top:3%;width:60%;opacity:.9}
+.hill{position:absolute;left:0;right:0;bottom:0;width:100%;height:auto;z-index:1}
+.spb{position:relative;z-index:3;margin-top:auto;padding:0 28px 32px;text-align:center}
+.spb .b{border-radius:999px;max-width:340px;margin:0 auto 18px}
+.ed{color:#aab4ff;letter-spacing:.06em;line-height:1.6}
+body.v-splash #nav{display:none}
+/* misc */
+.tabs2{display:none}
+.hd+.sg{margin-top:0}
+.c.dn .dc small{color:var(--mu)}
+
+/* ================= v7: polesan tampilan neon + musik ================= */
+:root[data-theme="cosmos"] .c,:root[data-theme="cosmos"] .tile,:root[data-theme="cosmos"] .row,:root[data-theme="cosmos"] .row2>summary,:root[data-theme="cosmos"] .gt2,:root[data-theme="cosmos"] .wr,:root[data-theme="cosmos"] .gd,:root[data-theme="cosmos"] .op{border-color:rgba(125,145,255,.55);box-shadow:0 0 0 1px rgba(110,130,255,.18),0 0 26px -6px rgba(90,110,255,.65),inset 0 0 26px rgba(70,90,255,.12)}
+:root[data-theme="cosmos"] nav{border-color:rgba(125,145,255,.5);box-shadow:0 0 28px -6px rgba(90,110,255,.7),0 14px 36px -10px rgba(0,0,0,.6)}
+/* ikon tile berwarna penuh */
+.ti2{color:#fff;background:linear-gradient(150deg,color-mix(in srgb,var(--tc,var(--ac)) 92%,#fff),color-mix(in srgb,var(--tc,var(--ac)) 55%,#12104a));border:1px solid color-mix(in srgb,var(--tc,var(--ac)) 70%,#fff);box-shadow:0 0 18px -2px var(--tc,var(--ac)),inset 0 1px 0 rgba(255,255,255,.4);width:50px;height:50px;border-radius:16px}
+.ri{color:#fff;background:linear-gradient(150deg,color-mix(in srgb,var(--tc,var(--ac)) 90%,#fff),color-mix(in srgb,var(--tc,var(--ac)) 55%,#12104a));border:1px solid color-mix(in srgb,var(--tc,var(--ac)) 65%,#fff);box-shadow:0 0 14px -3px var(--tc,var(--ac))}
+.tile{padding:14px 4px 12px;gap:6px}
+.tile .tl{font-size:14px;font-weight:700}
+.tile small{color:var(--mu);font:500 11px/1.2 var(--fb);text-align:center;padding:0 4px}
+/* saran hari ini */
+.hint{display:flex;gap:14px;align-items:center;background:linear-gradient(135deg,rgba(80,100,255,.35),rgba(45,225,211,.14)),var(--cd)}
+.hint b{font-size:15px;line-height:1.35;font-weight:600}
+.hi2{flex:0 0 46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(150deg,#7b8aff,#3646e0);color:#fff;box-shadow:0 0 18px -2px var(--ac)}
+/* tombol musik di beranda */
+.mbtn{flex:0 0 42px;height:42px;border-radius:50%;border:1px solid var(--bd);background:var(--cd);color:var(--ac);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.mbtn.on{background:linear-gradient(150deg,#7b8aff,#3646e0);color:#fff;box-shadow:0 0 18px -2px var(--ac);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 26px 2px var(--ac)}}
+html.calm .mbtn.on{animation:none}
+html.lite .mbtn.on{animation:none}
+/* judul bagian lebih jelas */
+h3{font-size:12px;color:var(--ac);letter-spacing:.14em}
+.hd h2{font-size:24px}
+.n{font-weight:400}
+/* pemutar musik */
+.mus{text-align:center;padding:20px 16px}
+.orb{width:210px;height:210px;margin:0 auto 6px;filter:drop-shadow(0 0 22px rgba(100,120,255,.7))}
+.orb svg{width:100%;height:100%;display:block}
+.sat{transform-origin:100px 100px;animation:spin 9s linear infinite;animation-play-state:paused}
+.mus.pl .sat{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+html.calm .sat{animation:none}
+html.lite .sat{animation:none}
+.eq{display:flex;gap:4px;justify-content:center;align-items:flex-end;height:26px;margin:4px 0 10px}
+.eq i{width:5px;height:6px;border-radius:3px;background:linear-gradient(180deg,#2de1d3,#5b6cff);animation:bar 1s ease-in-out infinite alternate;animation-play-state:paused}
+.mus.pl .eq i,.eq.sm i{animation-play-state:running}
+@keyframes bar{from{height:5px}to{height:24px}}
+html.calm .eq i{animation:none;height:14px}
+html.lite .eq i{animation:none;height:14px}
+.mctl{display:flex;gap:18px;justify-content:center;align-items:center;margin-bottom:14px}
+.mb2{width:46px;height:46px;border-radius:50%;border:1px solid var(--bd);background:var(--cd2);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.mb2.big{width:68px;height:68px;background:linear-gradient(150deg,#7b8aff,#3646e0);color:#fff;border:0;box-shadow:0 0 26px -2px var(--ac)}
+.vr{display:flex;align-items:center;gap:10px;color:var(--mu)}
+.vr input{margin:0;padding:0;background:none;border:0;accent-color:var(--ac)}
+#mini{position:fixed;left:16px;right:16px;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:6;max-width:600px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 14px;border-radius:18px;border:1px solid var(--bd);background:var(--nav);box-shadow:var(--shd);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+#mini .eq.sm{height:18px;margin:0}#mini .eq.sm i{width:4px}
+.mt3{flex:1;min-width:0;text-align:left;border:0;background:none;color:var(--fg);display:flex;flex-direction:column;cursor:pointer;font:inherit}
+.mt3 small{color:var(--mu);font-size:12px}
+#mini .mb2{width:38px;height:38px}
+body.mp #app{padding-bottom:178px}
+/* detail kecil */
+.prof .pi{min-width:0}
+.pn b{font-size:19px}
+
+html.lite nav,html.lite #mini,html.lite .act,html.lite .tabs button,html.lite .tile,html.lite .bk,html.lite .hint{-webkit-backdrop-filter:none;backdrop-filter:none}
+html.lite #sky .st{animation:none}
+html.lite .mbtn.on{animation:none}
+</style></head><body><div id="sky"><i class="st s1"></i><i class="st s2"></i><i class="st s3"></i><div id="fx"></div><div id="aur"></div><div id="mw"></div><div id="skycon"></div><div id="planet"><svg viewBox="0 0 80 60" width="100%" height="100%"><defs><radialGradient id="pg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#f6dca0"/><stop offset=".6" stop-color="#c98a4b"/><stop offset="1" stop-color="#6b3f2a"/></radialGradient><clipPath id="pf"><rect x="0" y="30" width="80" height="30"/></clipPath></defs><ellipse cx="40" cy="30" rx="38" ry="9" fill="none" stroke="rgba(240,215,160,.55)" stroke-width="3" transform="rotate(-18 40 30)"/><circle cx="40" cy="30" r="17" fill="url(#pg)"/><ellipse cx="40" cy="30" rx="38" ry="9" fill="none" stroke="rgba(240,215,160,.8)" stroke-width="3" transform="rotate(-18 40 30)" clip-path="url(#pf)"/></svg></div><div id="skymoon"></div></div><div id="app"></div><div id="t"></div><nav id="nav"></nav>
 <script>
 const $=s=>document.querySelector(s),DAY=864e5;
 const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let D={cards:[],batches:[],hist:[],set:{target:50,theme:'system'},nid:1,bid:1};
+const SET0={target:0,theme:'cosmos',goal:30,dir:'jp',hideRo:false,calm:false};
+let D={cards:[],batches:[],hist:[],set:{},nid:1,bid:1,quiz:[]},UN=[],QZ=null,STAB='ring',GRN=14,WL=null;
 try{const r=localStorage.getItem('kotoba_v1');if(r)D=Object.assign(D,JSON.parse(r))}catch(e){}
 if(!D.set.v2){D.set.target=0;D.set.v2=1}
+if(!D.set.v3){D.set.v3=1;if(!D.set.theme||D.set.theme=='system')D.set.theme='cosmos'}
+D.set=Object.assign({},SET0,D.set);if(!Array.isArray(D.quiz))D.quiz=[];if(!Array.isArray(D.prac))D.prac=[];
 function toast(m){const t=$('#t');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',3500)}
 function save(){try{localStorage.setItem('kotoba_v1',JSON.stringify(D))}catch(e){toast('Gagal menyimpan di browser ini. Segera buat backup.')}}
 const sod=()=>{const d=new Date();d.setHours(0,0,0,0);return +d},eod=()=>sod()+DAY-1;
@@ -44,7 +490,6 @@ function parse(line){let t=line.trim(),p;
  if(JP.test(p[0]))return p.length==2?{jp:p[0],ro:'',me:p[1],lv}:{jp:p[0],ro:p[1],me:p.slice(2).join(', '),lv};
  return{jp:'',ro:p[0],me:p.slice(1).join(', '),lv}}
 let SB='',V='home',S=null,IM=null,F={q:'',f:'all',b:'',n:50},CD=null,CF=null;
-function go(v){V=v;S=null;CD=null;CF=null;render()}
 function dupSet(){const s=new Set(D.cards.map(key));return s}
 const isNum=s=>/^\d+$/.test(s),FOOT=/halaman\s*\d+/i,JPC=/[\u3040-\u30ff\u4e00-\u9fff]/,LVL=/^(5|4|\+|N[45])$/i;
 const mora=s=>[...s].filter(c=>/[\u3041-\u3093\u30a1-\u30f3\u30fc]/.test(c)&&!/[ゃゅょぁぃぅぇぉャュョァィゥェォッっんン]/.test(c)).length,vow=s=>(s.match(/[aeiou]/gi)||[]).length;
@@ -87,7 +532,7 @@ function mk(raw,r,seen){const o={raw,skip:0};if(r.err){o.st='err';o.msg=r.err;re
  Object.assign(o,r);const k=key(r);if(!r.me||(!r.jp&&!r.ro)){o.st='err';o.msg='Data kosong';return o}
  if(seen.has(k))o.st='dup';else{o.st='ok';seen.add(k)}return o}
 function doPreview(){const t=$('#paste').value;if(!t.trim()){toast('Belum ada teks yang ditempel.');return}
- IM={name:$('#bname').value.trim()||'Tanpa nama',given:!!$('#bname').value.trim(),mode:'skip',rows:buildRows(t)};if(!IM.rows.length){toast('Tidak ada baris yang bisa dibaca.');IM=null;return}render()}
+ IM={lv:(($('#imp-lv')||{}).value)||'',name:$('#bname').value.trim()||'Tanpa nama',given:!!$('#bname').value.trim(),mode:'skip',rows:buildRows(t)};if(!IM.rows.length){toast('Tidak ada baris yang bisa dibaca.');IM=null;return}render()}
 function fixRow(i){const v=$('#r'+i).value,r=parse(v),seen=dupSet();IM.rows.forEach((x,j)=>{if(j!=i&&x.st=='ok')seen.add(key(x))});IM.rows[i]=mk(v,r,seen);render()}
 function skipRow(i){IM.rows[i].skip=!IM.rows[i].skip;render()}
 function setMode(v){IM.mode=v}
@@ -96,7 +541,7 @@ function commit(){const rows=IM.rows;if(rows.some(r=>r.st=='err'&&!r.skip)){toas
  const gb=r=>{const nm=multi?(r.tag||IM.name):(IM.given?IM.name:(r.tag||IM.name));if(!bm[nm]){bm[nm]={id:D.bid++,day:D.batches.length+1,name:nm,at:Date.now()};D.batches.push(bm[nm])}return bm[nm]};const map={};D.cards.forEach(c=>map[key(c)]=c);
  rows.forEach(r=>{if(r.skip||r.st=='err')return;
   if(r.st=='dup'){const old=map[key(r)];if(IM.mode=='skip')return;if(IM.mode=='update'&&old){old.me=r.me;if(r.lv)old.lv=r.lv;upd++;return}}
-  D.cards.push({id:D.nid++,jp:r.jp,ro:r.ro,me:r.me,lv:r.lv,tags:r.tag||'',b:gb(r).id,created:Date.now(),first:null,last:null,next:null,score:null,iv:0,ease:2.5,rc:0,ok:0,wr:0,hd:0,ez:0,lp:0});add++});
+  D.cards.push({id:D.nid++,jp:r.jp,ro:r.ro,me:r.me,lv:r.lv||IM.lv||'',tags:r.tag||'',b:gb(r).id,created:Date.now(),first:null,last:null,next:null,score:null,iv:0,ease:2.5,rc:0,ok:0,wr:0,hd:0,ez:0,lp:0});add++});
  save();IM=null;toast(add+' kartu dibuat di '+Object.keys(bm).length+' bab'+(upd?', '+upd+' diperbarui':''));go('batch')}
 function calc(c,r){const p=c.iv;let iv,e=c.ease,lr=0,m=0;
  if(r=='lupa'){iv=1;e=Math.max(1.3,e-.2);lr=1;m=10}
@@ -113,13 +558,6 @@ function rate(c,r){const now=Date.now(),p=c.iv,x=calc(c,r);if(c.first==null)c.fi
 function newToday(){return D.cards.filter(c=>c.first>=sod()).length}
 const fb=c=>!SB||c.b==SB;
 function newLeft(){const n=D.cards.filter(c=>!learned(c)&&fb(c)).length;return D.set.target>0?Math.min(n,Math.max(0,D.set.target-newToday())):n}
-function start(m){let L=[];const nw=D.cards.filter(c=>!learned(c)&&fb(c)).slice(0,newLeft()),rv=D.cards.filter(c=>due(c)&&fb(c)).sort((a,b)=>a.next-b.next);
- if(m=='new')L=nw;else if(m=='rev')L=rv;else if(m=='mix')L=rv.concat(nw);
- else if(m=='hard')L=D.cards.filter(c=>learned(c)&&fb(c)).sort((a,b)=>a.score-b.score).slice(0,30);else L=D.cards.filter(fb).slice(0,300);
- if(!L.length){toast(m=='new'?'Tidak ada kotoba baru (atau target hari ini sudah tercapai).':'Tidak ada kartu untuk mode ini.');return}
- S={q:L.map(c=>c.id),i:0,show:0,rq:{},n:L.length};render()}
-function ans(r){const id=S.q[S.i],c=D.cards.find(x=>x.id==id);if(c)rate(c,r);
- S.i++;if(c&&c.lrn)S.q.splice(Math.min(S.i+3,S.q.length),0,id);S.show=0;render()}
 function cardRow(c){const s=sc(c);return`<div class="r" onclick="CD=${c.id};render()"><div><b>${E(c.jp||c.ro)}</b> <span class="m">${c.jp&&c.ro?E(c.ro):''}</span><br><span class="m">${E(c.me)}</span></div><div class="m" style="text-align:right">${s==null?'Baru':s+'/100'}<br>${cat(s)}</div></div>`}
 function flt(){const q=F.q.toLowerCase(),bn={};D.batches.forEach(b=>bn[b.id]=('bab day '+b.day+' '+b.name).toLowerCase());
  return D.cards.filter(c=>{if(F.b&&c.b!=F.b)return false;const s=sc(c);
@@ -134,44 +572,706 @@ function retHtml(b){const cs=D.cards.filter(c=>c.b==b.id),m={};D.hist.forEach(x=
  return o||'<p class="m">Belum ada data (batch masih baru).</p>'}
 function batchStat(b){const cs=D.cards.filter(c=>c.b==b.id),ids=new Set(cs.map(c=>c.id)),h=D.hist.filter(x=>ids.has(x.c)),s=cs.map(sc);
  return{n:cs.length,k:s.filter(x=>x>=70).length,md:s.filter(x=>x!=null&&x>=40&&x<70).length,l:s.filter(x=>x!=null&&x<40).length,rv:h.length,a:acc(h)}}
-function R(){const m=V;let h='';
- if(S)return study();if(CD)return detail();if(IM)return preview();
- if(m=='home'){const td=D.hist.filter(x=>x.at>=sod()),lm=D.cards.filter(c=>learned(c)&&c.score<70).sort((a,b)=>a.score-b.score).slice(0,5);
-  h=`<h2>KOTOBA MEMORY</h2><div class="g"><div class="c"><div class="n">${(SB='',newLeft())}</div><div class="m">🆕 Kotoba baru</div></div><div class="c"><div class="n">${D.cards.filter(due).length}</div><div class="m">🔄 Review (overdue: ${D.cards.filter(over).length})</div></div><div class="c"><div class="n" style="font-size:20px">${acc(td)}</div><div class="m">📊 Akurasi hari ini</div></div><div class="c"><div class="n">${td.filter(x=>x.r=='lupa').length}</div><div class="m">🔁 Ulang hari ini</div></div></div><p class="m">Total kotoba: ${D.cards.length}</p>`;
-  if(!D.cards.length)h+=`<div class="c">Belum ada kotoba. Mulai dengan menempel daftar kotoba.</div><button class="b" onclick="go('imp')">TAMBAH KOTOBA</button>`;
-  else h+=`<button class="b" onclick="start('new')">BELAJAR KOTOBA BARU</button><button class="b" onclick="start('rev')">REVIEW HARI INI</button><button class="b s" onclick="go('imp')">+ Tempel kotoba baru</button><h3>KATA PERLU PERHATIAN</h3><div class="c">${lm.map(c=>`<div class="r"><span>${E(c.jp||c.ro)} — ${E(c.me)}</span><b>${c.score}/100</b></div>`).join('')||'<span class="m">Belum ada data.</span>'}</div>`}
- else if(m=='study'){h=`<h2>Belajar</h2><div class="c"><span class="m">Pilih batch (opsional)</span><select onchange="SB=this.value;render()"><option value="">Semua batch</option>${D.batches.map(b=>`<option value="${b.id}"${SB==b.id?' selected':''}>Bab ${b.day} ${E(b.name)}</option>`).join('')}</select></div><button class="b" onclick="start('new')">Kotoba baru</button><button class="b" onclick="start('rev')">Review hari ini</button><button class="b" onclick="start('mix')">Campur</button><button class="b s" onclick="start('hard')">Kata sulit</button><button class="b s" onclick="start('all')">Semua kotoba</button>`}
- else if(m=='imp'){h=`<h2>Tempel kotoba</h2><p class="m">Contoh: <code>ohayou = selamat pagi</code>, <code>おはよう | ohayou | selamat pagi | N5</code>, atau dipisah tab/spasi ganda. Satu kotoba per baris.</p><input id="bname" placeholder="Nama kategori, mis. Salam &amp; Ungkapan"><textarea id="paste" placeholder="Tempel di sini..."></textarea><button class="b" onclick="doPreview()">LIHAT PREVIEW</button>`}
- else if(m=='words'){h=`<h2>Kotoba</h2><input placeholder="Cari kata, arti, level, batch, tag" value="${E(F.q)}" oninput="setF('q',this.value)"><select onchange="setF('f',this.value)">${[['all','Semua'],['new','Baru'],['due','Due'],['over','Overdue'],['weak','Lemah'],['mid','Sedang'],['strong','Kuat'],['lapse','Sering lupa']].map(x=>`<option value="${x[0]}"${F.f==x[0]?' selected':''}>${x[1]}</option>`).join('')}</select><select onchange="setF('b',this.value)"><option value="">Semua batch</option>${D.batches.map(b=>`<option value="${b.id}"${F.b==b.id?' selected':''}>Bab ${b.day} ${E(b.name)}</option>`).join('')}</select><p class="m" id="cnt"></p><div id="lst"></div>`}
- else if(m=='stats')h=stats();
- else if(m=='batch'){h=`<h2>Batch</h2><button class="b" onclick="go('imp')">+ Tempel kotoba baru</button>`+(D.batches.map(b=>{const s=batchStat(b);return`<div class="c"><b>BAB ${b.day} — ${E(b.name)}</b><div class="m">${s.n} kotoba • dibuat ${fd(b.at)}</div><div class="r"><span>Kuat / Sedang / Lemah</span><span>${s.k} / ${s.md} / ${s.l}</span></div><div class="r"><span>Total review • Akurasi</span><span>${s.rv} • ${s.a}</span></div><h3>Retention</h3>${retHtml(b)}<button class="b s sm" onclick="F={q:'',f:'all',b:'${b.id}',n:50};go('words')">Lihat kata</button></div>`}).join('')||'<p class="m">Belum ada batch.</p>')}
- else if(m=='set'){h=`<h2>Setelan</h2><div class="c"><b>Batas kotoba baru per hari</b><select onchange="D.set.target=+this.value;save();toast('Disimpan')">${[[0,'Tanpa batas'],[10,10],[20,20],[30,30],[50,50],[100,100],[200,200]].map(x=>`<option value="${x[0]}"${D.set.target==x[0]?' selected':''}>${x[1]}</option>`).join('')}</select><b>Tampilan</b><select onchange="D.set.theme=this.value;save();applyTheme()">${[['system','Ikuti sistem'],['light','Terang'],['dark','Gelap']].map(x=>`<option value="${x[0]}"${D.set.theme==x[0]?' selected':''}>${x[1]}</option>`).join('')}</select></div><div class="c"><b>Backup &amp; restore</b><p class="m">Backup berupa teks. Salin, lalu simpan di Catatan/WhatsApp ke diri sendiri. Untuk memulihkan, tempel lagi di sini.</p><button class="b sm" onclick="mkBackup()">Buat backup</button><button class="b s sm" onclick="cpBackup()">Salin</button><textarea id="bk" placeholder="Teks backup muncul / ditempel di sini"></textarea><button class="b s" onclick="restore1()">Pulihkan dari teks ini</button><div id="rs"></div></div>`}
- return h}
-function stats(){const t=sod(),H=D.hist,cnt=(a,r)=>a.filter(x=>x.r==r).length,blk=(d,L)=>{const a=H.filter(x=>x.at>=t-(d-1)*DAY),nw=D.cards.filter(c=>c.first>=t-(d-1)*DAY).length;
-  return`<div class="r"><span>Kotoba baru</span><b>${nw}</b></div><div class="r"><span>Total review</span><b>${a.length}</b></div><div class="r"><span>Baik / Ulang / Sulit / Mudah</span><b>${cnt(a,'ingat')} / ${cnt(a,'lupa')} / ${cnt(a,'sulit')} / ${cnt(a,'mudah')}</b></div><div class="r"><span>Akurasi</span><b>${acc(a)}</b></div>`+(L?`<div class="r"><span>Hari belajar</span><b>${new Set(a.map(x=>Math.floor((x.at-t)/DAY))).size}</b></div>`:'')},
- sc2=D.cards.map(sc).filter(x=>x!=null),days=[];
- for(let i=6;i>=0;i--){const n=H.filter(x=>x.at>=t-i*DAY&&x.at<t-i*DAY+DAY).length;days.push(n)}const mx=Math.max(1,...days);
- const fg=D.cards.filter(c=>c.lp>0).sort((a,b)=>b.lp-a.lp).slice(0,10);
- return`<h2>Statistik</h2><div class="c"><b>Hari ini</b>${blk(1)}</div><div class="c"><b>7 hari</b>${blk(7,1)}<div class="r"><span>Kata kuat / lemah</span><b>${sc2.filter(x=>x>=70).length} / ${sc2.filter(x=>x<40).length}</b></div><div class="m" style="margin-top:8px">Review per hari</div>${days.map((n,i)=>`<div style="display:flex;gap:8px;align-items:center"><span class="m" style="width:22px">${n}</span><div class="bar" style="width:${n/mx*70}%"></div></div>`).join('')}</div><div class="c"><b>30 hari</b>${blk(30,1)}<div class="r"><span>Kuat / Sedang / Lemah</span><b>${sc2.filter(x=>x>=70).length} / ${sc2.filter(x=>x>=40&&x<70).length} / ${sc2.filter(x=>x<40).length}</b></div></div><div class="c"><b>KATA PALING SERING DIULANG</b>${fg.map((c,i)=>`<div class="r" onclick="CD=${c.id};render()"><span>${i+1}. ${E(c.jp||c.ro)} — ${E(c.me)}</span><b>${c.lp}x</b></div>`).join('')||'<p class="m">Belum ada data.</p>'}</div>`}
-function study(){if(S.i>=S.q.length){const done=S.n;return`<h2>Selesai 🎉</h2><div class="c">${done} kartu dipelajari. Semua hasil sudah tersimpan.</div><button class="b" onclick="go('home')">Kembali ke Home</button>`}
- const c=D.cards.find(x=>x.id==S.q[S.i]);if(!c){S.i++;return study()}
- return`<p class="m">${S.i+1} / ${S.q.length} <button class="b s sm" style="float:right" onclick="go('home')">Keluar</button></p><div class="c big">${E(c.jp||c.ro)}</div>`+(S.show?`<div class="c" style="text-align:center"><div style="font-size:24px;font-weight:700">${E(c.me)}</div><div class="m">${E(c.ro)} ${E(c.jp&&c.ro?'':'')}</div></div><div class="rt">${[['lupa','Ulang'],['sulit','Sulit'],['ingat','Baik'],['mudah','Mudah']].map(x=>`<button class="b s" onclick="ans('${x[0]}')">${x[1]}<br><small class="m">${lab(calc(c,x[0]))}</small></button>`).join('')}</div>`:`<button class="b" onclick="S.show=1;render()">TAMPILKAN JAWABAN</button>`)}
 function preview(){let sh=0;const r=IM.rows,n=x=>r.filter(y=>y.st==x).length,okc=r.filter(x=>!x.skip&&(x.st=='ok'||(x.st=='dup'&&IM.mode!='skip'))).length;
  return`<h2>Import Preview</h2><div class="c">Total baris: ${r.length}<br>Berhasil: ${n('ok')}<br><span class="dp">Duplikat: ${n('dup')}</span><br><span class="dp">Perlu dicek: ${r.filter(x=>x.chk&&x.st!='err').length}</span><br><span class="er">Error: ${n('err')}</span>${n('err')?'<br><button class="b s sm" onclick="skipAllErr()">Skip semua error</button>':''}</div>`+(n('dup')?`<div class="c">${n('dup')} kotoba sudah ada. Pilihan:<select onchange="setMode(this.value);render()"><option value="skip"${IM.mode=='skip'?' selected':''}>Skip (default)</option><option value="update"${IM.mode=='update'?' selected':''}>Update data</option><option value="dup"${IM.mode=='dup'?' selected':''}>Simpan sebagai duplicate</option></select></div>`:'')+
  `<div class="sc">`+r.map((x,i)=>x.st=='ok'&&!x.chk&&sh++>=30?'':(x.st=='err'||x.chk)?`<div class="c"><span class="${x.st=='err'?'er':'dp'}">${x.st=='err'?'Baris tidak bisa dibaca ('+E(x.msg)+')':'Perlu dicek: kata terpecah di PDF, ini tebakanku. Betulkan lewat Edit kalau salah.'}</span><input id="r${i}" value="${E(x.raw)}"><button class="b sm" onclick="fixRow(${i})">Edit</button><button class="b s sm" onclick="skipRow(${i})">${x.skip?'Batal skip':'Skip'}</button></div>`:`<div class="r" style="${x.skip?'opacity:.4':''}"><span>${E(x.jp)} ${E(x.ro)} → ${E(x.me)} ${x.lv?'<span class="tag">'+x.lv+'</span>':''}</span><span class="${x.st=='dup'?'dp':''}">${x.st=='dup'?'Duplikat':'OK'}</span></div>`).join('')+(r.filter(x=>x.st=='ok'&&!x.chk).length>30?'<p class="m">... dan '+(r.filter(x=>x.st=='ok'&&!x.chk).length-30)+' kotoba OK lainnya (tidak ditampilkan, semuanya tetap disimpan)</p>':'')+`</div><button class="b" onclick="commit()">SIMPAN ${okc} KOTOBA</button><button class="b s" onclick="IM=null;render()">Batal</button>`}
 function detail(){const c=D.cards.find(x=>x.id==CD);if(!c){CD=null;return R()}const s=sc(c),hs=D.hist.filter(x=>x.c==c.id).slice().reverse(),ic={ingat:'Baik',lupa:'Ulang',sulit:'Sulit',mudah:'Mudah'};
- return`<button class="b s sm" onclick="CD=null;CF=null;render()">← Kembali</button><h2>${E(c.jp||c.ro)}</h2><div class="m">${E(c.ro)}</div><div style="font-size:20px">${E(c.me)}</div><div class="c"><div class="r"><span>Memory Score</span><b>${s==null?'Belum ada data':s+'/100 • '+cat(s)}</b></div><div class="r"><span>Pertama dipelajari</span><span>${fd(c.first)}</span></div><div class="r"><span>Total review</span><span>${c.rc}</span></div><div class="r"><span>Baik / Ulang / Sulit / Mudah</span><span>${c.ok} / ${c.wr} / ${c.hd} / ${c.ez}</span></div><div class="r"><span>Akurasi</span><span>${c.rc?Math.round(100*(c.ok+c.ez)/c.rc)+'%':'Belum ada data'}</span></div><div class="r"><span>Review terakhir</span><span>${fd(c.last)}</span></div><div class="r"><span>Review berikutnya</span><span>${fd(c.next)}</span></div><div class="r"><span>Interval</span><span>${c.iv} hari</span></div></div><h3>RIWAYAT</h3><div class="c">${hs.map(x=>`<div class="r"><span>${fd(x.at)}</span><span>${ic[x.r]}</span></div>`).join('')||'<span class="m">Belum ada data.</span>'}</div><h3>Edit</h3><div class="c">Japanese<input id="e1" value="${E(c.jp)}">Romaji<input id="e2" value="${E(c.ro)}">Arti<input id="e3" value="${E(c.me)}">Level<input id="e4" value="${E(c.lv)}">Tag<input id="e5" value="${E(c.tags)}"><button class="b" onclick="saveEdit(${c.id})">Simpan perubahan</button>${CF?`<p class="er">Hapus kartu ini beserta riwayatnya?</p><button class="b" style="background:#dc2626" onclick="delCard(${c.id})">Ya, hapus</button><button class="b s" onclick="CF=null;render()">Batal</button>`:`<button class="b s" onclick="CF=1;render()">Hapus kartu</button>`}</div>`}
+ return`<button class="b s sm" onclick="CD=null;CF=null;render()">← Kembali</button><h2>${E(c.jp||c.ro)}</h2><div class="m">${E(c.ro)}</div><div style="font-size:20px">${E(c.me)}</div><div class="c"><div class="r"><span>Memory Score</span><b>${s==null?'Belum ada data':s+'/100 • '+cat(s)}</b></div><div class="r"><span>Pertama dipelajari</span><span>${fd(c.first)}</span></div><div class="r"><span>Total review</span><span>${c.rc}</span></div><div class="r"><span>Baik / Ulang / Sulit / Mudah</span><span>${c.ok} / ${c.wr} / ${c.hd} / ${c.ez}</span></div><div class="r"><span>Akurasi</span><span>${c.rc?Math.round(100*(c.ok+c.ez)/c.rc)+'%':'Belum ada data'}</span></div><div class="r"><span>Review terakhir</span><span>${fd(c.last)}</span></div><div class="r"><span>Review berikutnya</span><span>${fd(c.next)}</span></div><div class="r"><span>Interval</span><span>${c.iv} hari</span></div></div><h3>RIWAYAT</h3><div class="c">${hs.map(x=>`<div class="r"><span>${fd(x.at)}</span><span>${ic[x.r]}</span></div>`).join('')||'<span class="m">Belum ada data.</span>'}</div><h3>Edit</h3><div class="c">Japanese<input id="e1" value="${E(c.jp)}">Romaji<input id="e2" value="${E(c.ro)}">Arti<input id="e3" value="${E(c.me)}">Level<input id="e4" value="${E(c.lv)}">Tag<input id="e5" value="${E(c.tags)}">Catatan / jembatan keledai<textarea id="e6" style="min-height:70px" placeholder="Misal: mirip kata ...">${E(c.note||'')}</textarea><button class="b" onclick="saveEdit(${c.id})">Simpan perubahan</button><button class="b s" onclick="askAI(${c.id})">Tanya AI (salin pertanyaan)</button>${CF?`<p class="er">Hapus kartu ini beserta riwayatnya?</p><button class="b" style="background:#dc2626" onclick="delCard(${c.id})">Ya, hapus</button><button class="b s" onclick="CF=null;render()">Batal</button>`:`<button class="b s" onclick="CF=1;render()">Hapus kartu</button>`}</div>`}
 function saveEdit(id){const c=D.cards.find(x=>x.id==id),jp=$('#e1').value.trim(),ro=$('#e2').value.trim(),me=$('#e3').value.trim();if(!me||(!jp&&!ro)){toast('Kata dan arti tidak boleh kosong.');return}
- c.jp=jp;c.ro=ro;c.me=me;c.lv=$('#e4').value.trim();c.tags=$('#e5').value.trim();save();toast('Tersimpan');render()}
+ c.jp=jp;c.ro=ro;c.me=me;c.lv=$('#e4').value.trim();c.tags=$('#e5').value.trim();c.note=$('#e6').value.trim();save();toast('Tersimpan');render()}
 function delCard(id){D.cards=D.cards.filter(x=>x.id!=id);D.hist=D.hist.filter(x=>x.c!=id);save();CD=null;CF=null;toast('Kartu dihapus');render()}
-function mkBackup(){$('#bk').value=JSON.stringify({app:'kotoba-memory',v:1,at:Date.now(),data:D});$('#bk').select()}
-function cpBackup(){mkBackup();const t=$('#bk').value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Backup disalin')).catch(()=>{$('#bk').select();try{document.execCommand('copy');toast('Backup disalin')}catch(e){toast('Tekan lama teks lalu pilih Salin')}})}
 function restore1(){let o;try{o=JSON.parse($('#bk').value)}catch(e){toast('Teks backup tidak valid.');return}
  if(!o||o.app!='kotoba-memory'||!o.data||!Array.isArray(o.data.cards)){toast('Ini bukan backup Kotoba Memory.');return}
  $('#rs').innerHTML=`<p class="er">Data sekarang (${D.cards.length} kartu) akan diganti backup (${o.data.cards.length} kartu). Lanjut?</p><button class="b" onclick="restore2()">Ya, pulihkan</button>`;window._bk=o}
-function restore2(){const d=window._bk.data;D=Object.assign({cards:[],batches:[],hist:[],set:{target:50,theme:'system'},nid:1,bid:1},d);save();applyTheme();toast('Backup dipulihkan');go('home')}
-function applyTheme(){const t=D.set.theme;if(t=='system')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t)}
-const NV=[['home','Home'],['study','Belajar'],['words','Kotoba'],['stats','Statistik'],['batch','Batch'],['set','Setelan']];
-function render(){$('#app').innerHTML=R();$('#nav').innerHTML=NV.map(n=>`<button class="${(V==n[0]||(V=='imp'&&n[0]=='batch'))&&!S?'on':''}" onclick="go('${n[0]}')">${n[1]}</button>`).join('');if(V=='words'&&!S&&!CD&&!IM)renderList();window.scrollTo(0,0)}
-applyTheme();render();
+/* ================= v3: semesta, statistik, fitur baru ================= */
+const cardById=id=>D.cards.find(x=>x.id==id);
+const sodOf=t=>{const d=new Date(t);d.setHours(0,0,0,0);return +d};
+const dstart=i=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);return +d};
+const dlab=t=>{const d=new Date(t);return d.getDate()+'/'+(d.getMonth()+1)};
+const okR=r=>r=='ingat'||r=='mudah';
+const pctOf=(a,b)=>b?Math.round(100*a/b):null;
+const niceMax=v=>{if(v<=5)return 5;const p=Math.pow(10,Math.floor(Math.log10(v))),m=v/p;return(m<=1?1:m<=2?2:m<=5?5:10)*p};
+const fmtMin=s=>s<60?Math.round(s)+' dtk':s<3600?Math.round(s/60)+' mnt':Math.floor(s/3600)+' j '+Math.round((s%3600)/60)+' mnt';
+const MON=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+/* ---------- ikon kecil ---------- */
+function ic(n,s){s=s||18;const P={
+ spk:'<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 010 6"/><path d="M18 6.5a8 8 0 010 11"/>',
+ undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
+ flame:'<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 01-10 0c0-2 1-3 2-4 .3 1.5 1 2 2 2-1-3 0-5 1-8z"/>',
+ star:'<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7L12 3z"/>'};
+ return`<svg class="ic" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`}
+
+/* ---------- bulan: fase asli hari ini ---------- */
+const SYN=29.530588853,MREF=Date.UTC(2000,0,6,18,14);
+function moonInfo(d){d=d||new Date();const age=(((d-MREF)/DAY)%SYN+SYN)%SYN,p=age/SYN;
+ const nm=p<.03||p>.97?'Bulan baru':p<.22?'Sabit awal':p<.28?'Perbani awal':p<.47?'Cembung awal':p<.53?'Purnama':p<.72?'Cembung akhir':p<.78?'Perbani akhir':'Sabit akhir';
+ return{age,p,nm,toFull:Math.round((p<.5?.5-p:1.5-p)*SYN)}}
+function moonLine(){const m=moonInfo();return m.nm+' · hari ke-'+(Math.floor(m.age)+1)+' · '+(m.nm=='Purnama'?'purnama malam ini':'purnama ±'+m.toFull+' hari lagi')}
+function moonSVG(p,sz,id){const r=sz/2-2,c=sz/2,w=p>.5,pp=w?1-p:p,cs=Math.cos(2*Math.PI*pp),rx=Math.abs(r*cs).toFixed(2),tf=w?` transform="translate(${sz} 0) scale(-1 1)"`:'';
+ let lit='';
+ if(pp>.496)lit=`<circle cx="${c}" cy="${c}" r="${r}"/>`;
+ else if(pp>.004)lit=`<path${tf} d="M${c} ${c-r}A${r} ${r} 0 0 1 ${c} ${c+r}A${rx} ${r} 0 0 ${cs>0?0:1} ${c} ${c-r}Z"/>`;
+ if(pp>.496&&w)lit=`<circle cx="${c}" cy="${c}" r="${r}"/>`;
+ const k=sz/56;
+ return`<svg viewBox="0 0 ${sz} ${sz}" width="${sz}" height="${sz}" role="img" aria-label="Fase bulan"><defs><clipPath id="mc${id}">${lit}</clipPath></defs><circle cx="${c}" cy="${c}" r="${r}" style="fill:var(--moondark)"/><g clip-path="url(#mc${id})"><circle cx="${c}" cy="${c}" r="${r}" style="fill:var(--moonlit)"/><circle cx="${c-r*.3}" cy="${c-r*.25}" r="${r*.2}" style="fill:var(--moonc)"/><circle cx="${c+r*.3}" cy="${c+r*.15}" r="${r*.28}" style="fill:var(--moonc)"/><circle cx="${c-r*.1}" cy="${c+r*.5}" r="${r*.14}" style="fill:var(--moonc)"/></g><circle cx="${c}" cy="${c}" r="${r}" style="fill:none;stroke:var(--bd)"/></svg>`}
+
+/* ---------- rasi bintang ---------- */
+const CONS=[
+ {n:'Salib Selatan',lat:'Crux',l:'Gubuk Penceng',s:[[46,8],[52,92],[18,46],[80,38],[68,72]],e:[[0,1],[2,3]]},
+ {n:'Orion',lat:'Orion',l:'Waluku',s:[[50,6],[28,14],[72,16],[38,50],[50,48],[62,46],[30,90],[72,86]],e:[[1,0],[0,2],[1,3],[2,5],[3,4],[4,5],[3,6],[5,7]]},
+ {n:'Beruang Besar',lat:'Ursa Major',l:'Biduk',s:[[82,26],[80,50],[54,54],[50,32],[32,36],[18,28],[6,38]],e:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6]]},
+ {n:'Kasiopeia',lat:'Cassiopeia',l:'',s:[[6,62],[28,28],[50,52],[72,22],[94,48]],e:[[0,1],[1,2],[2,3],[3,4]]},
+ {n:'Kalajengking',lat:'Scorpius',l:'',s:[[20,8],[28,14],[22,26],[38,36],[44,50],[50,62],[60,74],[74,86],[86,76]],e:[[0,1],[1,3],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8]]}];
+const STAR_TOT=CONS.reduce((a,c)=>a+c.s.length,0),PER=20;
+function starInfo(){const lr=D.cards.filter(learned),n=lr.length,k=lr.filter(c=>sc(c)>=70).length,lit=Math.min(STAR_TOT,Math.floor(n/PER)),gold=Math.min(lit,Math.floor(k/PER));
+ return{lit,gold,n,k,next:lit>=STAR_TOT?0:PER-n%PER}}
+function consSVG(c,st,bg){
+ const L=c.e.map(e=>{const a=c.s[e[0]],b=c.s[e[1]],on=bg||(st[e[0]]>0&&st[e[1]]>0);return`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" style="stroke:var(--cline);opacity:${on?1:.4}" stroke-width="${on?1.6:1}" vector-effect="non-scaling-stroke"/>`}).join('');
+ const P=c.s.map((p,i)=>{const s=bg?1:st[i],x=p[0],y=p[1];
+  if(s==2)return`<circle cx="${x}" cy="${y}" r="8.5" style="fill:var(--stargold);opacity:.28"/><circle cx="${x}" cy="${y}" r="4.2" style="fill:var(--stargold)"/>`;
+  if(s==1)return`<circle cx="${x}" cy="${y}" r="${bg?6.5:7}" style="fill:var(--starlit);opacity:.22"/><circle cx="${x}" cy="${y}" r="${bg?3.4:3.6}" style="fill:var(--starlit)"/>`;
+  return`<circle cx="${x}" cy="${y}" r="2.4" style="fill:none;stroke:var(--staroff)" stroke-width="1.5"/>`}).join('');
+ return`<svg viewBox="-6 -6 112 112" role="img" aria-label="Rasi ${E(c.n)}">${L}${P}</svg>`}
+function consStates(){const si=starInfo();let g=0;return CONS.map(c=>c.s.map(()=>{const i=g++;return i<si.gold?2:i<si.lit?1:0}))}
+
+/* ---------- latar langit ---------- */
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function buildSky(){const r=rng(11),cols=['rgba(255,255,255,.9)','rgba(200,215,255,.85)','rgba(255,236,190,.8)'];
+ const gen=n=>Array.from({length:n},()=>`${(r()*100).toFixed(1)}vw ${(r()*100).toFixed(1)}vh 0 0 ${cols[Math.floor(r()*3)]}`).join(',');
+ document.querySelectorAll('#sky .st').forEach((el,i)=>{el.style.boxShadow=gen([170,64,44][i]||20)});
+ $('#skycon').innerHTML=`<div class="con c1">${consSVG(CONS[1],0,1)}</div><div class="con c2">${consSVG(CONS[0],0,1)}</div><div class="con c3">${consSVG(CONS[3],0,1)}</div>`;
+ $('#fx').innerHTML=Array.from({length:22},()=>`<i style="--x:${(r()*100).toFixed(1)}%;--y:${(r()*90).toFixed(1)}%;--d:${(9+r()*10).toFixed(1)}s;--l:-${(r()*14).toFixed(1)}s;--s:${(6+r()*14).toFixed(0)}px"></i>`).join('')}
+function paintSky(){const m=moonInfo();$('#skymoon').innerHTML=moonSVG(m.p,56,'sky')}
+
+/* ---------- ukuran data ---------- */
+function dayCounts(){const m={};D.hist.forEach(x=>{const k=sodOf(x.at),o=m[k]||(m[k]={n:0,lupa:0,sulit:0,ingat:0,mudah:0});o.n++;o[x.r]++});return m}
+function streakInfo(m){const keys=Object.keys(m).map(Number).sort((a,b)=>a-b),R=x=>Math.round(x/DAY);let best=0,run=0,prev=null,fr=-99;
+ keys.forEach(k=>{if(prev==null)run=1;else{const g=R(k-prev);if(g==1)run++;else if(g==2&&R(k)-1-fr>=7){run++;fr=R(k)-1}else run=1}if(run>best)best=run;prev=k});
+ let rec=0;keys.forEach(k=>{if(m[k].n>rec)rec=m[k].n});
+ const today=!!m[dstart(0)];let cur=0,frz=false;
+ if(keys.length){const last=keys[keys.length-1],g=R(dstart(0)-last);if(g<=1)cur=run;else if(g==2&&R(dstart(0))-1-fr>=7){cur=run;frz=true}}
+ return{cur,best,days:keys.length,today,rec,frz}}
+function studySecs(h){let t=0,prev=null;(h||D.hist).slice().sort((x,y)=>x.at-y.at).forEach(x=>{const g=prev==null?1e9:x.at-prev;t+=g<=120000?g:8000;prev=x.at});return t/1000}
+const accOf=a=>a.length?pctOf(a.filter(x=>okR(x.r)).length,a.length):null;
+
+/* ---------- grafik SVG ---------- */
+function stackChart(days,cols,H){H=H||150;const W=320,L=28,R=4,T=8,B=18,N=days.length,tot=d=>d.v.reduce((a,b)=>a+b,0),mx=niceMax(Math.max(1,...days.map(tot))),pw=(W-L-R)/N,bw=Math.max(3,pw*.68),ph=H-T-B,step=Math.ceil(N/5);let g='';
+ [0,.5,1].forEach(f=>{const y=T+ph*(1-f);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" style="stroke:var(--bd)"/><text x="${L-5}" y="${y+3}" text-anchor="end" class="tx">${Math.round(mx*f)}</text>`});
+ days.forEach((d,i)=>{let y=T+ph;const x=L+i*pw+(pw-bw)/2;
+  d.v.forEach((val,k)=>{if(!val)return;const h=val/mx*ph;y-=h;g+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h,1).toFixed(1)}" rx="1.5" style="fill:${cols[k]}"><title>${d.l}: ${val}</title></rect>`});
+  if((N-1-i)%step==0)g+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-4}" text-anchor="middle" class="tx">${d.l}</text>`});
+ return`<svg class="ch" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`}
+function lineChart(pts,labs){const W=320,H=140,L=32,R=12,T=16,B=18,N=pts.length,mx=niceMax(Math.max(1,...pts)),step=Math.ceil(N/5),X=i=>L+(N==1?0:i*(W-L-R)/(N-1)),Y=v=>T+(H-T-B)*(1-v/mx);let g='';
+ [0,.5,1].forEach(f=>{const y=T+(H-T-B)*(1-f);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" style="stroke:var(--bd)"/><text x="${L-5}" y="${y+3}" text-anchor="end" class="tx">${Math.round(mx*f)}</text>`});
+ const line=pts.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join('');
+ g+=`<path d="${line}L${X(N-1).toFixed(1)} ${(H-B)}L${X(0).toFixed(1)} ${(H-B)}Z" style="fill:var(--ac);opacity:.16"/><path d="${line}" style="fill:none;stroke:var(--ac)" stroke-width="2" stroke-linejoin="round"/>`;
+ g+=`<circle cx="${X(N-1).toFixed(1)}" cy="${Y(pts[N-1]).toFixed(1)}" r="3.5" style="fill:var(--ac)"/><text x="${(X(N-1)-6).toFixed(1)}" y="${(Y(pts[N-1])-8).toFixed(1)}" text-anchor="end" class="tx" style="font-weight:700;fill:var(--fg)">${pts[N-1]}</text>`;
+ labs.forEach((l,i)=>{if((N-1-i)%step==0)g+=`<text x="${X(i).toFixed(1)}" y="${H-4}" text-anchor="middle" class="tx">${l}</text>`});
+ return`<svg class="ch" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`}
+function heatmap(m){const wk=12,cs=20,gp=3,L=28,T=16,now=new Date();now.setHours(0,0,0,0);const dow=(now.getDay()+6)%7,start=new Date(now);start.setDate(start.getDate()-dow-(wk-1)*7);
+ let mx=1;Object.values(m).forEach(o=>{if(o.n>mx)mx=o.n});let g='';
+ ['Sen','','Rab','','Jum','','Min'].forEach((l,i)=>{if(l)g+=`<text x="${L-5}" y="${T+i*(cs+gp)+cs*.7}" text-anchor="end" class="tx">${l}</text>`});
+ const op=[.28,.5,.75,1];
+ for(let w=0;w<wk;w++)for(let d=0;d<7;d++){const dt=new Date(start);dt.setDate(start.getDate()+w*7+d);if(dt>now)continue;
+  const n=(m[+dt]||{}).n||0,lv=n?Math.min(4,Math.ceil(n/mx*4)):0,x=L+w*(cs+gp),y=T+d*(cs+gp),isT=+dt==+now;
+  if(d==0&&dt.getDate()<=7)g+=`<text x="${x}" y="${T-5}" class="tx">${MON[dt.getMonth()]}</text>`;
+  g+=`<rect x="${x}" y="${y}" width="${cs}" height="${cs}" rx="4" style="fill:${lv?'var(--ac)':'var(--staroff)'};opacity:${lv?op[lv-1]:.3}${isT?';stroke:var(--fg);stroke-width:1.5':''}"><title>${dt.getDate()} ${MON[dt.getMonth()]}: ${n} review</title></rect>`}
+ const W=L+wk*(cs+gp),H=T+7*(cs+gp);
+ return`<svg class="ch" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`}
+function hbar(rows,mx){mx=mx||Math.max(1,...rows.map(r=>r.v));return rows.map(r=>`<div class="hb"><span class="hl">${r.l}</span><span class="ht"><i style="width:${Math.max(r.v?2:0,Math.round(r.v/mx*100))}%;background:${r.c||'var(--ac)'}"></i></span><span class="hv">${r.t}</span></div>`).join('')}
+const legend=a=>`<div class="lg">${a.map(x=>`<span><i style="background:${x[0]}"></i>${x[1]}</span>`).join('')}</div>`;
+const empty=t=>`<div class="c"><p class="m" style="margin:0">${t||'Belum ada data. Mulai belajar, lalu angkanya muncul di sini.'}</p></div>`;
+
+/* ---------- Home ---------- */
+const HAFAL=90,hafalN=()=>D.cards.filter(c=>c.rc&&sc(c)>=HAFAL).length;
+function hafalCard(){const n=hafalN(),t=D.cards.length,p=t?Math.round(n/t*100):0;return`<div class="c"><div class="m">Sudah hafal (Memory Score ${HAFAL}+)</div><div class="n">${n} <small>dari ${t} kotoba · ${p}%</small></div><div class="pg" style="margin-top:10px"><i style="width:${p}%"></i></div></div>`}
+function homeView(){SB='';
+ const td=D.hist.filter(x=>x.at>=sod()),m=dayCounts(),st=streakInfo(m),si=starInfo(),goal=D.set.goal||30,f=Math.min(1,td.length/goal),nl=newLeft(),dueN=D.cards.filter(due).length,ovN=D.cards.filter(over).length;
+ const lm=D.cards.filter(c=>learned(c)&&sc(c)<70).sort((a,b)=>sc(a)-sc(b)).slice(0,5),hr=new Date().getHours(),gr=hr<11?'Selamat pagi':hr<15?'Selamat siang':hr<18?'Selamat sore':'Selamat malam';
+ const bd=D.set.lastBackup?Math.floor((Date.now()-D.set.lastBackup)/DAY):null;
+ let h=`<div class="hero"><div class="eyebrow">Kotoba Memory</div><h1>${gr}</h1><div class="moonl">${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long'})}</div><div class="moonl">${moonLine()}</div></div>`;
+ if(!D.cards.length)return h+`<div class="c">Belum ada kotoba. Mulai dengan menempel daftar kotoba, lalu tiap kata jadi kartu otomatis.</div><button class="b" onclick="go('imp')">Tambah kotoba</button>`;
+ h+=`<div class="c goal"><div class="gm ring"><svg viewBox="0 0 96 96" width="96" height="96" aria-hidden="true"><circle cx="48" cy="48" r="43" class="rtk"/><circle cx="48" cy="48" r="43" class="rpg" pathLength="100" stroke-dasharray="${Math.round(f*100)} 100"/></svg><span>${moonSVG(f*.5,66,'goal')}</span></div><div><div class="m">Target hari ini</div><div class="n">${td.length} <small>/ ${goal} review</small></div><div class="chips"><span class="chip">${ic('flame',14)} ${st.cur?st.cur+' hari beruntun':'mulai streak hari ini'}</span>${st.frz?'<span class="chip">hari libur dipakai kemarin</span>':''}${td.length>=goal?'<span class="chip">Target tercapai</span>':st.cur&&!st.today?'<span class="chip">belum belajar hari ini</span>':''}</div></div></div>`;
+ h+=hafalCard();
+ h+=`<div class="g tiles"><div class="c t1"><div class="n">${nl}</div><div class="m">Kotoba baru</div></div><div class="c t2"><div class="n">${dueN}</div><div class="m">Review (terlambat: ${ovN})</div></div><div class="c t3"><div class="n">${acc(td).replace('Belum ada data','–')}</div><div class="m">Akurasi hari ini</div></div><div class="c t4"><div class="n">${td.filter(x=>x.r=='lupa').length}</div><div class="m">Ulang hari ini</div></div></div>`;
+ h+=`<button class="b" onclick="start('new')">Belajar kotoba baru${nl?`<span class="bn">${nl}</span>`:''}</button><button class="b" onclick="start('rev')">Review hari ini${dueN?`<span class="bn">${dueN}</span>`:''}</button><div class="g"><button class="b s" onclick="go('imp')">Tempel kotoba</button><button class="b s" onclick="startQuiz()">Kuis cepat</button></div>`;
+ if(D.cards.length>=20&&(bd==null||bd>=7))h+=`<div class="c lk" onclick="go('set')"><b>Saatnya backup</b><div class="m">${bd==null?'Kamu belum pernah backup.':'Backup terakhir '+bd+' hari lalu.'} Data hanya ada di HP ini. Ketuk untuk membuat backup.</div></div>`;
+ {const ST=consStates();let ci=ST.findIndex(a=>a.some(x=>!x));if(ci<0)ci=0;const on=ST[ci].filter(x=>x>0).length;
+ h+=`<div class="c lk" onclick="ACT='sky';go('ach')" style="display:flex;gap:14px;align-items:center"><div class="mini" style="flex:0 0 96px">${consSVG(CONS[ci],ST[ci])}</div><div style="flex:1;min-width:0"><b>Peta bintang</b><div class="m">${CONS[ci].n}: ${on} / ${CONS[ci].s.length} bintang</div><div class="pg" style="margin:10px 0 6px"><i style="width:${Math.round(si.lit/STAR_TOT*100)}%"></i></div><div class="m">${si.lit} / ${STAR_TOT} menyala · ${si.gold} emas. ${si.next?'Bintang berikutnya: '+si.next+' kotoba lagi.':'Seluruh langit menyala.'}</div></div></div>`}
+ h+=`<h3>Kata perlu perhatian</h3><div class="c">${lm.map(c=>`<div class="r lk" onclick="CD=${c.id};render()"><span>${E(c.jp||c.ro)} · ${E(c.me)}</span><b>${sc(c)}/100</b></div>`).join('')||'<span class="m">Belum ada data.</span>'}</div>`;
+ return h}
+
+/* ---------- Belajar ---------- */
+function relWL(){try{if(WL){WL.release();WL=null}}catch(e){}}
+function lockWL(){try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(l=>{WL=l}).catch(()=>{})}catch(e){}}
+function go(v){V=v;S=null;CD=null;CF=null;QZ=null;T=null;MT=null;TM=null;clearInterval(TMH);relWL();render()}
+function start(m){let L=[];const nw=D.cards.filter(c=>!learned(c)&&fb(c)).slice(0,newLeft()),rv=D.cards.filter(c=>due(c)&&fb(c)).sort((a,b)=>a.next-b.next);
+ if(m=='new')L=nw;else if(m=='rev')L=rv;else if(m=='mix')L=rv.concat(nw);
+ else if(m=='rand')L=D.cards.filter(c=>learned(c)&&fb(c)).sort(()=>Math.random()-.5).slice(0,30);else if(m=='leech')L=D.cards.filter(c=>c.lp>=2&&fb(c)).sort((a,b)=>b.lp-a.lp).slice(0,30);else if(m=='hard')L=D.cards.filter(c=>learned(c)&&fb(c)).sort((a,b)=>sc(a)-sc(b)).slice(0,30);else L=D.cards.filter(fb).slice(0,300);
+ if(!L.length){toast(m=='rand'?'Belum ada kata yang sudah dipelajari.':m=='leech'?'Belum ada kata bandel (kata yang kamu lupakan 2 kali atau lebih).':m=='new'?'Tidak ada kotoba baru (atau batas hari ini sudah tercapai).':'Tidak ada kartu untuk mode ini.');return}
+ if(D.set.smode=='acak')L=L.slice().sort(()=>Math.random()-.5);UN=[];S={q:L.map(c=>c.id),i:0,show:0,n:L.length,res:{lupa:0,sulit:0,ingat:0,mudah:0},t0:Date.now(),stars0:starInfo().lit,dm:{},mode:D.set.smode||'normal'};lockWL();render()}
+function snap(c){return JSON.parse(JSON.stringify(c))}
+function ans(r){if(!S||S.i>=S.q.length)return;const id=S.q[S.i],c=cardById(id);
+ UN.push({id,prev:c?snap(c):null,i:S.i,q:S.q.slice(),res:Object.assign({},S.res)});if(UN.length>40)UN.shift();
+ if(c){rate(c,r);S.res[r]++}
+ S.i++;if(c&&c.lrn)S.q.splice(Math.min(S.i+3,S.q.length),0,id);S.show=0;render()}
+function undo(){const u=UN.pop();if(!u||!S)return;const c=cardById(u.id);
+ if(c&&u.prev){Object.keys(c).forEach(k=>{if(!(k in u.prev))delete c[k]});Object.assign(c,u.prev)}
+ for(let k=D.hist.length-1;k>=0;k--){if(D.hist[k].c==u.id){D.hist.splice(k,1);break}}
+ S.i=u.i;S.q=u.q;S.res=u.res;S.show=0;save();toast('Jawaban terakhir dibatalkan');render()}
+function dirOf(c){let d=D.set.dir||'jp';if(d=='rand'){if(!S.dm[c.id])S.dm[c.id]=Math.random()<.5?'jp':'id';d=S.dm[c.id]}return d}
+function sp(id){const c=cardById(id);if(!c)return;
+ try{if(!('speechSynthesis' in window))throw 0;const vs=speechSynthesis.getVoices(),ja=vs.filter(v=>/^ja/i.test(v.lang));if(vs.length&&!ja.length)throw 1;
+  const u=new SpeechSynthesisUtterance(c.jp||c.ro);u.lang='ja-JP';u.rate=.85;if(ja[0])u.voice=ja[0];speechSynthesis.cancel();speechSynthesis.speak(u)}
+ catch(e){toast('Suara Jepang belum tersedia di perangkat ini. Pasang data suara Jepang di pengaturan Text-to-speech Android.')}}
+function study(){if(S.i>=S.q.length)return summary();
+ const c=cardById(S.q[S.i]);if(!c){S.i++;return study()}
+ const d=dirOf(c),jt=c.jp||c.ro,both=c.jp&&c.ro,pct=Math.round(S.i/S.q.length*100);
+ const JPB=sh=>`<div class="jp">${E(jt)}</div>`+(both&&sh?`<div class="ro">${E(c.ro)}</div>`:''),MEB=`<div class="mean">${E(c.me)}</div>`;
+ const front=d=='jp'?JPB(!D.set.hideRo||S.mode=='mudah'):MEB,back=d=='jp'?MEB+(both&&D.set.hideRo&&S.mode!='mudah'?`<div class="ro">${E(c.ro)}</div>`:''):JPB(true);
+ return`<div class="hd"><button class="bk" onclick="go('study')" aria-label="Kembali">${I('back',20)}</button><h2>Belajar Kotoba</h2></div>${sg([['normal','Normal'],['acak','Acak'],['mudah','Mudah']],S.mode||'normal','setMode2')}<div class="top" style="margin-top:12px"><div class="pg"><i style="width:${pct}%"></i></div><span class="m">${S.i+1} / ${S.q.length}</span></div>
+<div class="tools"><button class="ib" onclick="undo()" ${UN.length?'':'disabled'}>${ic('undo',16)} Urungkan</button><span style="display:flex;gap:8px">${S.show?`<button class="ib" onclick="askAI(${c.id})">Tanya AI</button>`:''}</span></div>
+<div class="c fc">${c.lv?`<span class="lvb">${E(c.lv)}</span>`:''}<button class="spk" onclick="sp(${c.id})" aria-label="Putar suara">${ic('spk',22)}</button>${front}${S.show?`<div class="sep"></div>${back}${c.note?`<div class="note">Catatan: ${E(c.note)}</div>`:''}`:''}</div>
+<div class="act"><div>${S.show?`<div class="rt">${[['lupa','Ulang'],['sulit','Sulit'],['ingat','Baik'],['mudah','Mudah']].map(x=>`<button class="rb r-${x[0]}" onclick="ans('${x[0]}')"><b>${x[1]}</b><small>${lab(calc(c,x[0]))}</small></button>`).join('')}</div>`:`<button class="b" onclick="S.show=1;render(1)">Tampilkan jawaban</button>`}</div></div>`}
+function summary(){relWL();badgeCheck();const r=S.res,tot=r.lupa+r.sulit+r.ingat+r.mudah,ok=r.ingat+r.mudah,secs=Math.max(1,Math.round((Date.now()-S.t0)/1000)),si=starInfo(),gain=si.lit-S.stars0,a=pctOf(ok,tot);
+ return`<h2>Sesi selesai</h2><div class="c"><div class="n">${tot} <small>jawaban · ${fmtMin(secs)}</small></div><div class="m">Akurasi ${a==null?'-':a+'%'}</div></div>
+<div class="g"><div class="c"><div class="n" style="color:var(--bad)">${r.lupa}</div><div class="m">Ulang</div></div><div class="c"><div class="n" style="color:var(--hd)">${r.sulit}</div><div class="m">Sulit</div></div><div class="c"><div class="n" style="color:var(--ok)">${r.ingat}</div><div class="m">Baik</div></div><div class="c"><div class="n" style="color:var(--ok2)">${r.mudah}</div><div class="m">Mudah</div></div></div>
+${gain>0?`<div class="c lk" onclick="ACT='sky';go('ach')">${ic('star',18)} <b>${gain} bintang baru menyala.</b> <span class="m">Lihat peta bintang</span></div>`:''}
+<div class="act"><div><button class="b" onclick="go('home')">Kembali ke Home</button></div></div>`}
+
+/* ---------- Kuis cepat (tidak mengubah jadwal review) ---------- */
+function startQuiz(kind,n,lvl){let pool=D.cards.filter(fb);{const f=lvl=='mudah'?pool.filter(c=>c.rc&&sc(c)>=70):lvl=='sulit'?pool.filter(c=>c.rc&&sc(c)<70):null;if(f&&f.length>=4)pool=f}if(pool.length<4){toast('Butuh minimal 4 kotoba untuk kuis.');return}
+ const sh=a=>a.slice().sort(()=>Math.random()-.5),pick=sh(pool).slice(0,Math.min(n||10,pool.length));
+ const q=pick.map(c=>{const dir=kind=='ear'?'ear':Math.random()<.5?'jp':'id',oth=sh(pool.filter(x=>x.id!=c.id&&(dir!='id'?x.me!=c.me:(x.jp||x.ro)!=(c.jp||c.ro)))).slice(0,3);return{c,dir,opts:sh(oth.concat([c]))}});
+ S=null;T=null;MT=null;TM=null;QZ={q,i:0,sel:null,ok:0,wrong:[],kind:kind||''};render()}
+function pickQ(k){const z=QZ,it=z.q[z.i];if(z.sel!=null)return;z.sel=k;if(it.opts[k].id==it.c.id)z.ok++;else z.wrong.push(it.c);render(1)}
+function nextQ(){const z=QZ;z.i++;z.sel=null;if(z.i>=z.q.length){z.done=1;D.quiz.push({at:Date.now(),n:z.q.length,ok:z.ok,k:z.kind||''});LP=z.ok*100;if(LP>(D.set.hi||0))D.set.hi=LP;save();badgeCheck()}render()}
+function quizView(){const z=QZ;
+ if(z.done){const a=pctOf(z.ok,z.q.length);return`<h2>Hasil ${z.kind=='ear'?'kuis dengar':'kuis'}</h2><div class="c"><div class="n">${z.ok} <small>/ ${z.q.length} benar · ${a}%</small></div>${scoreLine()}</div>`+(z.wrong.length?`<h3>Perlu diulang</h3><div class="c">${z.wrong.map(c=>`<div class="r"><span>${E(c.jp||c.ro)} <span class="m">${c.jp&&c.ro?E(c.ro):''}</span></span><b>${E(c.me)}</b></div>`).join('')}</div>`:'<div class="c">Semua benar. Bagus sekali.</div>')+`<div class="act"><div class="g"><button class="b s" onclick="go('home')" style="margin:0">Home</button><button class="b" onclick="startQuiz(QZ.kind)" style="margin:0">Kuis lagi</button></div></div>`}
+ const it=z.q[z.i],c=it.c;
+ return`<div class="top"><div class="pg"><i style="width:${Math.round(z.i/z.q.length*100)}%"></i></div><span class="m">${z.i+1} / ${z.q.length}</span></div><div class="tools"><button class="ib" onclick="go('study')">Keluar</button><span class="m" style="align-self:center">${z.kind=='ear'?'Kuis dengar':'Kuis cepat'} · tidak mengubah jadwal</span></div>
+<div class="c fc">${it.dir=='ear'?`<button class="ib" style="align-self:center;padding:18px 24px" onclick="sp(${c.id})">${ic('spk',34)}</button><div class="m">${z.sel==null?'Dengarkan, lalu pilih artinya':''}</div>${z.sel!=null?`<div class="jp" style="font-size:36px">${E(c.jp||c.ro)}</div>${c.jp&&c.ro?`<div class="ro">${E(c.ro)}</div>`:''}`:''}`:it.dir=='jp'?`<div class="jp">${E(c.jp||c.ro)}</div>${c.jp&&c.ro?`<div class="ro">${E(c.ro)}</div>`:''}`:`<div class="mean">${E(c.me)}</div>`}</div>`+
+ it.opts.map((o,k)=>{let cl='op';if(z.sel!=null){if(o.id==c.id)cl+=' ok';else if(k==z.sel)cl+=' no'}return`<button class="${cl}" onclick="pickQ(${k})">${it.dir!='id'?E(o.me):E(o.jp||o.ro)+(o.jp&&o.ro?` <span class="m">${E(o.ro)}</span>`:'')}</button>`}).join('')+
+ (z.sel!=null?`<div class="act"><div><button class="b" onclick="nextQ()">${z.i+1>=z.q.length?'Lihat hasil':'Lanjut'}</button></div></div>`:'')}
+
+/* ---------- Statistik ---------- */
+function stats(){const T=[['ring','Ringkasan'],['graf','Grafik'],['kata','Kata'],['bab','Bab'],['lat','Latihan'],['sky','Langit'],['bdg','Lencana']];
+ return`<h2>Statistik</h2><div class="tabs">${T.map(t=>`<button class="${STAB==t[0]?'on':''}" onclick="STAB='${t[0]}';render()">${t[1]}</button>`).join('')}</div>`+({ring:stRing,graf:stGraf,kata:stKata,bab:stBab,lat:stLat,sky:stSky,bdg:stBdg}[STAB]||stRing)()}
+function stRing(){const H=D.hist,m=dayCounts(),st=streakInfo(m);if(!H.length)return empty();
+ const secs=studySecs(),adult=H.filter(x=>x.p>=21),young=H.filter(x=>x.p>0&&x.p<21),aa=adult.length>=10?accOf(adult):null,ya=young.length>=10?accOf(young):null;
+ const cols=[[1,'Hari ini'],[7,'7 hari'],[30,'30 hari']].map(x=>{const since=dstart(x[0]-1),a=H.filter(y=>y.at>=since);return{l:x[1],a,nw:D.cards.filter(c=>c.first>=since).length,days:Object.keys(m).filter(k=>+k>=since).length}});
+ const row=(l,f)=>`<tr><td>${l}</td>${cols.map(c=>`<td>${f(c)}</td>`).join('')}</tr>`,cnt=(c,r)=>c.a.filter(x=>x.r==r).length;
+ const qz=D.quiz.length?Math.round(D.quiz.reduce((a,q)=>a+q.ok,0)/D.quiz.reduce((a,q)=>a+q.n,0)*100):null;
+ return hafalCard()+weekBlock()+`<div class="g"><div class="c"><div class="n">${st.cur}</div><div class="m">Hari beruntun (rekor ${st.best})</div></div><div class="c"><div class="n">${H.length}</div><div class="m">Total review</div></div><div class="c"><div class="n" style="font-size:28px">${fmtMin(secs)}</div><div class="m">Estimasi waktu belajar</div></div><div class="c"><div class="n">${aa==null?'–':aa+'%'}</div><div class="m">Retensi kartu matang (interval 21 hari+)${aa==null?'. Butuh 10 review.':''}</div></div></div>
+<div class="c"><div class="tbw"><table class="tb"><tr><th></th>${cols.map(c=>`<th>${c.l}</th>`).join('')}</tr>${row('Kotoba baru',c=>c.nw)}${row('Total review',c=>c.a.length)}${row('Baik',c=>cnt(c,'ingat'))}${row('Mudah',c=>cnt(c,'mudah'))}${row('Sulit',c=>cnt(c,'sulit'))}${row('Ulang',c=>cnt(c,'lupa'))}${row('Akurasi',c=>c.a.length?accOf(c.a)+'%':'–')}${row('Hari belajar',c=>c.days)}</table></div></div>
+<div class="c"><div class="r"><span>Hari belajar (sejak awal)</span><b>${st.days}</b></div><div class="r"><span>Rata-rata review per hari belajar</span><b>${st.days?Math.round(H.length/st.days):0}</b></div><div class="r"><span>Rekor review dalam sehari</span><b>${st.rec}</b></div><div class="r"><span>Retensi kartu muda (interval di bawah 21 hari)</span><b>${ya==null?'–':ya+'%'}</b></div>${qz!=null?`<div class="r"><span>Kuis cepat (${D.quiz.length} kali)</span><b>${qz}% benar</b></div>`:''}</div>`}
+function stGraf(){const H=D.hist,m=dayCounts(),N=GRN;if(!H.length&&!D.cards.length)return empty();
+ const days=[],labs=[];for(let i=N-1;i>=0;i--){const k=dstart(i),o=m[k]||{};days.push({l:dlab(k),v:[o.mudah||0,o.ingat||0,o.sulit||0,o.lupa||0]});labs.push(dlab(k))}
+ const act=days.filter(d=>d.v.some(x=>x)).length,tot=days.reduce((a,d)=>a+d.v.reduce((x,y)=>x+y,0),0);
+ const cum=[];let base=D.cards.filter(c=>c.first!=null&&c.first<dstart(N-1)).length;for(let i=N-1;i>=0;i--){const e=dstart(i)+DAY;cum.push(D.cards.filter(c=>c.first!=null&&c.first<e).length)}
+ const cnt={Baru:0,Lemah:0,Sedang:0,Kuat:0,'Sangat kuat':0};D.cards.forEach(c=>{cnt[cat(sc(c))]++});const TC=Math.max(1,D.cards.length),CC={Baru:'var(--staroff)',Lemah:'var(--bad)',Sedang:'var(--hd)',Kuat:'var(--ok)','Sangat kuat':'var(--ok2)'};
+ const fc=[...Array(14)].map((_,i)=>({l:dlab(dstart(-i)),v:[0,0]}));D.cards.forEach(c=>{if(!learned(c)||c.next==null)return;const k=Math.round((sodOf(c.next)-sod())/DAY),i=Math.max(0,k);if(i<14){if(k<0)fc[0].v[1]++;else fc[i].v[0]++}});
+ const wk=fc.slice(0,7).reduce((a,d)=>a+d.v[0]+d.v[1],0),busy=fc.reduce((b,d)=>(d.v[0]+d.v[1]>b.v[0]+b.v[1]?d:b),fc[0]);
+ const IV=[['≤ 1 hari',c=>c.iv<=1],['2–3 hari',c=>c.iv>=2&&c.iv<=3],['4–7 hari',c=>c.iv>=4&&c.iv<=7],['8–14 hari',c=>c.iv>=8&&c.iv<=14],['15–30 hari',c=>c.iv>=15&&c.iv<=30],['31–90 hari',c=>c.iv>=31&&c.iv<=90],['> 90 hari',c=>c.iv>90]],lr=D.cards.filter(learned);
+ const iv=IV.map((x,i)=>({l:x[0],v:lr.filter(x[1]).length,c:i<2?'var(--hd)':i<4?'var(--ac)':'var(--ok)'}));iv.forEach(r=>r.t=r.v);
+ const TB=[['Pagi (04–10)',h=>h>=4&&h<10],['Siang (10–15)',h=>h>=10&&h<15],['Sore (15–19)',h=>h>=15&&h<19],['Malam (19–04)',h=>h>=19||h<4]].map(x=>{const a=H.filter(y=>x[1](new Date(y.at).getHours()));return{l:x[0],n:a.length,a:accOf(a)}});
+ const best=TB.filter(t=>t.n>=10).sort((a,b)=>b.a-a.a)[0];
+ return`<div class="c"><span class="seg">${[14,30].map(n=>`<button class="${GRN==n?'on':''}" onclick="GRN=${n};render(1)">${n} hari</button>`).join('')}</span><p class="ct">Review per hari</p><p class="cs">${tot?`${tot} review dalam ${N} hari, aktif ${act} hari.`:'Belum ada review di rentang ini.'}</p>${stackChart(days,['var(--ok2)','var(--ok)','var(--hd)','var(--bad)'])}${legend([['var(--ok2)','Mudah'],['var(--ok)','Baik'],['var(--hd)','Sulit'],['var(--bad)','Ulang']])}</div>
+<div class="c"><p class="ct">Kotoba yang sudah dipelajari</p><p class="cs">Jumlah kumulatif dalam ${N} hari. Mulai ${base}, sekarang ${cum[cum.length-1]}.</p>${lineChart(cum,labs)}</div>
+<div class="c"><p class="ct">Langit aktivitas</p><p class="cs">12 minggu terakhir. Makin terang, makin banyak review.</p>${heatmap(m)}</div>
+<div class="c"><p class="ct">Kekuatan hafalan</p><p class="cs">${D.cards.length} kartu berdasarkan Memory Score.</p><div class="stk">${Object.keys(cnt).map(k=>`<i style="width:${cnt[k]/TC*100}%;background:${CC[k]}" title="${k}: ${cnt[k]}"></i>`).join('')}</div>${legend(Object.keys(cnt).map(k=>[CC[k],`${k} ${cnt[k]}`]))}</div>
+<div class="c"><p class="ct">Beban review 14 hari ke depan</p><p class="cs">${wk} review dijadwalkan minggu ini. Terpadat: ${busy.l} (${busy.v[0]+busy.v[1]}).</p>${stackChart(fc,['var(--ac)','var(--bad)'],130)}${legend([['var(--ac)','Dijadwalkan'],['var(--bad)','Terlambat (dihitung hari ini)']])}</div>
+<div class="c"><p class="ct">Sebaran interval</p><p class="cs">Makin ke bawah, makin lama kamu bisa membiarkan kartu itu.</p>${lr.length?hbar(iv):'<span class="m">Belum ada data.</span>'}</div>
+<div class="c"><p class="ct">Akurasi menurut waktu</p><p class="cs">${best?`Paling akurat saat ${best.l.split(' (')[0].toLowerCase()} (${best.a}%).`:'Butuh minimal 10 review di satu waktu untuk perbandingan.'}</p>${hbar(TB.map(t=>({l:t.l,v:t.n>=10?t.a:0,t:t.n>=10?t.a+'% · '+t.n:t.n+' (kurang)',c:t===best?'var(--ok)':'var(--ac)'})),100)}</div>`}
+function stKata(){const lr=D.cards.filter(learned);if(!lr.length)return empty();
+ const row=(c,v)=>`<div class="r lk" onclick="CD=${c.id};render()"><span>${E(c.jp||c.ro)} · ${E(c.me)}</span><b>${v}</b></div>`;
+ const weak=lr.filter(c=>sc(c)<70).sort((a,b)=>sc(a)-sc(b)).slice(0,10),fg=D.cards.filter(c=>c.lp>0).sort((a,b)=>b.lp-a.lp).slice(0,10),strong=lr.filter(c=>c.rc>=3).sort((a,b)=>sc(b)-sc(a)).slice(0,10);
+ const lv={};D.cards.forEach(c=>{const k=c.lv||'Tanpa level',o=lv[k]||(lv[k]={n:0,l:0,k:0,s:0});o.n++;if(learned(c)){o.l++;o.s+=sc(c);if(sc(c)>=70)o.k++}});
+ return`<div class="c"><p class="ct">Perlu perhatian</p><p class="cs">Memory Score paling rendah.</p>${weak.map(c=>row(c,sc(c)+'/100')).join('')||'<span class="m">Semua kata sudah kuat.</span>'}</div>
+<div class="c"><p class="ct">Paling sering diulang</p>${fg.map(c=>row(c,c.lp+'x')).join('')||'<span class="m">Belum ada yang diulang.</span>'}</div>
+<div class="c"><p class="ct">Paling kuat</p><p class="cs">Kata dengan minimal 3 review.</p>${strong.map(c=>row(c,sc(c)+'/100')).join('')||'<span class="m">Belum ada data.</span>'}</div>
+<div class="c"><p class="ct">Per level</p>${hbar(Object.keys(lv).map(k=>{const o=lv[k];return{l:E(k),v:o.l?Math.round(o.s/o.l):0,t:o.l?Math.round(o.s/o.l)+' · '+o.l+'/'+o.n:'0/'+o.n,c:'var(--ac)'}}),100)}<p class="cs" style="margin-top:6px">Rata-rata Memory Score · kata dipelajari / total.</p></div>`}
+function stBab(){if(!D.batches.length)return empty('Belum ada bab. Tempel kotoba dulu.');
+ const L=D.batches.map(b=>{const cs=D.cards.filter(c=>c.b==b.id),ln=cs.filter(learned);return{b,n:cs.length,l:ln.length,avg:ln.length?Math.round(ln.reduce((a,c)=>a+sc(c),0)/ln.length):null}}),
+ att=L.filter(x=>x.l>=3).sort((a,b)=>a.avg-b.avg).slice(0,5),col=a=>a==null?'var(--staroff)':a<40?'var(--bad)':a<70?'var(--hd)':'var(--ok)';
+ return(att.length?`<div class="c"><p class="ct">Bab perlu perhatian</p><p class="cs">Rata-rata skor paling rendah.</p>${hbar(att.map(x=>({l:'Bab '+x.b.day,v:x.avg,t:x.avg+'/100',c:col(x.avg)})),100)}</div>`:'')+
+ `<div class="c"><p class="ct">Semua bab</p>${hbar(L.map(x=>({l:'Bab '+x.b.day,v:x.avg||0,t:(x.avg==null?'–':x.avg)+' · '+x.l+'/'+x.n,c:col(x.avg)})),100)}<p class="cs" style="margin-top:6px">Rata-rata skor · dipelajari / total. Nama bab ada di tab Bab.</p></div>`}
+function stSky(){const si=starInfo(),ST=consStates();
+ return`<div class="c"><div class="n">${si.lit} <small>/ ${STAR_TOT} bintang menyala · ${si.gold} emas</small></div><div class="pg" style="margin:10px 0"><i style="width:${Math.round(si.lit/STAR_TOT*100)}%"></i></div><p class="m" style="margin:0">Satu bintang menyala tiap ${PER} kotoba yang sudah kamu pelajari (kamu: ${si.n}). Bintang berubah emas tiap ${PER} kotoba yang kuat, yaitu Memory Score 70 ke atas (kamu: ${si.k}). ${si.next?'Bintang berikutnya: '+si.next+' kotoba lagi.':'Seluruh langit menyala. Terus ulang kata-katamu sampai semuanya emas.'}</p></div>
+<div class="cg">${CONS.map((c,i)=>{const on=ST[i].filter(x=>x>0).length;return`<div class="c">${consSVG(c,ST[i])}<b>${c.n}</b><div class="m">${c.lat}${c.l?' · '+c.l:''}</div><div class="m">${on} / ${c.s.length} bintang</div></div>`}).join('')}</div>`}
+
+/* ---------- Halaman lain ---------- */
+function studyMenu(){return`<h2>Belajar</h2><div class="c"><span class="m">Pilih bab (opsional)</span><select id="sel-bab" onchange="SB=this.value;render(1)"><option value="">Semua bab</option>${D.batches.map(b=>`<option value="${b.id}"${SB==b.id?' selected':''}>Bab ${b.day} ${E(b.name)}</option>`).join('')}</select></div><button class="b" onclick="start('new')">Kotoba baru</button><button class="b" onclick="start('rev')">Review hari ini</button><button class="b" onclick="start('mix')">Campur</button><button class="b s" onclick="start('hard')">Kata sulit</button><button class="b s" onclick="start('all')">Semua kotoba</button><button class="b s" onclick="startQuiz()">Kuis cepat</button>`}
+function setS(k,v){D.set[k]=(k=='goal'||k=='target')?+v:v;save();applyTheme();render(1)}
+function setView(){const s=D.set,bd=s.lastBackup?Math.floor((Date.now()-s.lastBackup)/DAY):null,sel=(id,k,opts)=>`<select id="${id}" onchange="setS('${k}',this.value)">${opts.map(o=>`<option value="${o[0]}"${String(s[k])==String(o[0])?' selected':''}>${o[1]}</option>`).join('')}</select>`;
+ return`<h2>Setelan</h2><div class="c"><b>Tampilan</b>${themePick()}<label class="ck"><input type="checkbox" id="s-calm" ${s.calm?'checked':''} onchange="setS('calm',this.checked)"> Kurangi animasi (hemat baterai)</label><p class="m" style="margin:0">Hari beruntun punya 1 hari libur gratis per minggu: bolos satu hari tidak memutus rangkaian.</p></div>
+<div class="c"><b>Belajar</b><div class="m">Target review per hari</div>${sel('s-goal','goal',[10,20,30,50,100,200].map(n=>[n,n]))}<div class="m">Batas kotoba baru per hari</div>${sel('s-target','target',[[0,'Tanpa batas'],[10,10],[20,20],[30,30],[50,50],[100,100],[200,200]])}<div class="m">Arah kartu</div>${sel('s-dir','dir',[['jp','Jepang ke Indonesia'],['id','Indonesia ke Jepang'],['rand','Acak']])}<label class="ck"><input type="checkbox" id="s-hro" ${s.hideRo?'checked':''} onchange="setS('hideRo',this.checked)"> Sembunyikan romaji sampai jawaban dibuka</label></div>
+<div class="c"><b>Backup &amp; restore</b><p class="m">${bd==null?'Belum pernah backup.':'Backup terakhir '+bd+' hari lalu.'} Backup berupa teks. Salin, lalu simpan di Catatan atau WhatsApp ke diri sendiri. Untuk memulihkan, tempel lagi di sini.</p><button class="b sm" onclick="mkBackup()">Buat backup</button><button class="b s sm" onclick="cpBackup()">Salin</button><textarea id="bk" placeholder="Teks backup muncul atau ditempel di sini"></textarea><button class="b s" onclick="restore1()">Pulihkan dari teks ini</button><div id="rs"></div></div>`}
+function R(){if(S)return study();if(T)return typeView();if(MT)return matchView();if(TM)return t60View();if(QZ)return quizView();if(CD)return detail();if(IM)return preview();const m=V;
+ if(m=='home')return homeView();
+ if(m=='study')return studyMenu();
+ if(m=='imp')return`<h2>Tempel kotoba</h2><p class="m">Contoh: <code>ohayou = selamat pagi</code>, <code>おはよう | ohayou | selamat pagi | N5</code>, atau dipisah tab/spasi ganda. Satu kotoba per baris. Tempelan dari PDF juga bisa dibaca.</p><input id="bname" placeholder="Nama bab, mis. Salam &amp; Ungkapan"><textarea id="paste" placeholder="Tempel di sini..."></textarea><button class="b" onclick="doPreview()">Lihat preview</button>`;
+ if(m=='words')return`<h2>Kotoba</h2><input id="f-q" placeholder="Cari kata, arti, level, bab, tag" value="${E(F.q)}" oninput="setF('q',this.value)"><select id="f-f" onchange="setF('f',this.value)">${[['all','Semua'],['new','Baru'],['due','Due'],['over','Overdue'],['weak','Lemah'],['mid','Sedang'],['strong','Kuat'],['lapse','Sering lupa']].map(x=>`<option value="${x[0]}"${F.f==x[0]?' selected':''}>${x[1]}</option>`).join('')}</select><select id="f-b" onchange="setF('b',this.value)"><option value="">Semua bab</option>${D.batches.map(b=>`<option value="${b.id}"${F.b==b.id?' selected':''}>Bab ${b.day} ${E(b.name)}</option>`).join('')}</select><p class="m" id="cnt"></p><div id="lst"></div>`;
+ if(m=='stats')return stats();
+ if(m=='batch')return`<h2>Bab</h2><button class="b" onclick="go('imp')">+ Tempel kotoba baru</button>`+(D.batches.map(b=>{const s=batchStat(b);return`<div class="c"><b>Bab ${b.day} · ${E(b.name)}</b><div class="m">${s.n} kotoba · dibuat ${fd(b.at)}</div><div class="r"><span>Kuat / Sedang / Lemah</span><span>${s.k} / ${s.md} / ${s.l}</span></div><div class="r"><span>Total review · Akurasi</span><span>${s.rv} · ${s.a}</span></div><h3>Retensi</h3>${retHtml(b)}<button class="b s sm" onclick="F={q:'',f:'all',b:'${b.id}',n:50};go('words')">Lihat kata</button></div>`}).join('')||'<p class="m">Belum ada bab.</p>');
+ if(m=='set')return setView();
+ return''}
+function mkBackup(){D.set.lastBackup=Date.now();save();badgeCheck();$('#bk').value=JSON.stringify({app:'kotoba-memory',v:3,at:Date.now(),data:D});$('#bk').select()}
+function cpBackup(){mkBackup();const t=$('#bk').value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Backup disalin')).catch(()=>{$('#bk').select();try{document.execCommand('copy');toast('Backup disalin')}catch(e){toast('Tekan lama teks lalu pilih Salin')}})}
+function restore2(){const d=window._bk.data;D=Object.assign({cards:[],batches:[],hist:[],set:{},nid:1,bid:1,quiz:[],prac:[]},d);D.set=Object.assign({},SET0,D.set||{});D.set.v2=1;D.set.v3=1;if(!Array.isArray(D.quiz))D.quiz=[];if(!Array.isArray(D.prac))D.prac=[];save();applyTheme();toast('Backup dipulihkan');go('home')}
+function applyTheme(){document.documentElement.setAttribute('data-theme',D.set.theme||'cosmos');document.documentElement.classList.toggle('calm',!!D.set.calm)}
+const NV=[['home','Home'],['study','Belajar'],['words','Kotoba'],['stats','Statistik'],['batch','Bab'],['set','Setelan']];
+const NVI={home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',study:'<path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z"/><path d="M12 6v14"/>',words:'<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',stats:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',batch:'<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/>',set:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'};
+const nvSvg=k=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NVI[k]}</svg>`;
+function render(keep){const full=!!(S||QZ||T||MT||TM),nv=$('#nav');$('#app').innerHTML=R();nv.hidden=full;document.body.classList.toggle('full',full);
+ nv.innerHTML=NV.map(n=>`<button class="${!full&&(V==n[0]||(V=='imp'&&n[0]=='batch'))?'on':''}" onclick="go('${n[0]}')">${nvSvg(n[0])}<span>${n[1]}</span></button>`).join('');
+ if(V=='words'&&!full&&!CD&&!IM)renderList();paintSky();const ti=$('#ti');if(ti&&T&&!T.chk)ti.focus();
+ if(QZ&&!QZ.done&&QZ.q[QZ.i]&&QZ.q[QZ.i].dir=='ear'&&QZ.said!==QZ.i){QZ.said=QZ.i;sp(QZ.q[QZ.i].c.id)}
+ $('#app').classList.toggle('ani',!keep);if(!keep)window.scrollTo(0,0)}
+
+/* ================= v4: latihan baru, lencana, statistik mudah, tema ================= */
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'');
+const lng=s=>norm(s).replace(/ou|oo/g,'o').replace(/uu/g,'u').replace(/aa/g,'a').replace(/ii/g,'i').replace(/ee|ei/g,'e');
+const meParts=me=>String(me||'').toLowerCase().split(/[,;\/()]|\batau\b/).map(norm).filter(x=>x);
+function typeOk(c,inp){const n=norm(inp);if(!n)return false;
+ if(String(c.ro||'').split(/[\/,;]/).some(r=>norm(r)&&lng(r)==lng(inp)))return true;
+ if(norm(c.ro)&&lng(c.ro)==lng(inp))return true;
+ if(norm(c.me)==n)return true;
+ return meParts(c.me).some(p=>p==n||(n.length>=4&&p.includes(n)&&n.length>=p.length*.6))}
+function logPrac(m,n,ok){D.prac.push({at:Date.now(),m,n,ok});if(D.prac.length>500)D.prac.shift();save()}
+const sh=a=>a.slice().sort(()=>Math.random()-.5);
+function barTop(p,txt){return`<div class="top"><div class="pg"><i style="width:${p}%"></i></div><span class="m">${txt}</span></div>`}
+
+/* ---------- Ketik jawaban ---------- */
+let T=null;
+function startType(){let pool=D.cards.filter(c=>due(c)&&fb(c)).concat(D.cards.filter(c=>!learned(c)&&fb(c)).slice(0,newLeft()));
+ if(!pool.length)pool=D.cards.filter(c=>learned(c)&&fb(c)).sort((a,b)=>sc(a)-sc(b));
+ pool=sh(pool.slice(0,20));if(!pool.length){toast('Belum ada kartu untuk dilatih.');return}
+ S=null;QZ=null;MT=null;TM=null;T={q:pool.map(c=>c.id),i:0,ok:0,no:0,chk:null,val:'',wrong:[],stars0:starInfo().lit};lockWL();render()}
+function typeCheck(){const t=T,c=cardById(t.q[t.i]);if(!c||t.chk)return;if(!norm(t.val)){toast('Ketik jawabanmu dulu, atau tekan Tidak tahu.');return}t.chk=typeOk(c,t.val)?'ok':'no';render(1)}
+function typeSkip(){T.val='';T.chk='no';render(1)}
+function typeNext(fix){const t=T,c=cardById(t.q[t.i]),good=fix||t.chk=='ok';
+ if(c){rate(c,good?'ingat':'lupa');if(good)t.ok++;else{t.no++;t.wrong.push(c)}}
+ t.i++;t.chk=null;t.val='';render()}
+function typeView(){const t=T;
+ if(t.i>=t.q.length){if(!t.logged){t.logged=1;relWL();logPrac('ketik',t.ok+t.no,t.ok);badgeCheck()}
+  const a=pctOf(t.ok,t.ok+t.no),gain=starInfo().lit-t.stars0;
+  return`<h2>Latihan selesai</h2><div class="c"><div class="n">${t.ok} <small>/ ${t.ok+t.no} benar · ${a==null?'-':a+'%'}</small></div><div class="m">Hasilnya sudah ikut mengatur jadwal review.</div>${scoreLine()}</div>`+
+  (gain>0?`<div class="c lk" onclick="ACT='sky';go('ach')">${ic('star',18)} <b>${gain} bintang baru menyala.</b></div>`:'')+
+  (t.wrong.length?`<h3>Perlu diulang</h3><div class="c">${t.wrong.map(c=>`<div class="r"><span>${E(c.jp||c.ro)} <span class="m">${c.jp&&c.ro?E(c.ro):''}</span></span><b>${E(c.me)}</b></div>`).join('')}</div>`:'<div class="c">Semua benar. Bagus sekali.</div>')+
+  `<div class="act"><div class="g"><button class="b s" onclick="go('home')" style="margin:0">Home</button><button class="b" onclick="startType()" style="margin:0">Lagi</button></div></div>`}
+ const c=cardById(t.q[t.i]);if(!c){t.i++;return typeView()}
+ const front=c.jp?`<div class="jp">${E(c.jp)}</div>`:`<div class="mean">${E(c.me)}</div>`,
+ hint=c.jp&&c.ro?'Ketik romaji atau artinya':c.jp?'Ketik artinya':'Ketik romaji',
+ body=t.chk?`<div class="res ${t.chk}">${t.chk=='ok'?'Benar':'Belum tepat'}</div>${c.ro?`<div class="ro">${E(c.ro)}</div>`:''}<div class="mean" style="font-size:26px">${E(c.me)}</div>${t.chk=='no'&&t.val?`<div class="m">Jawabanmu: ${E(t.val)}</div>`:''}${c.note?`<div class="note">Catatan: ${E(c.note)}</div>`:''}`
+ :`<input id="ti" class="ti" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${hint}" value="${E(t.val)}" oninput="T.val=this.value" onkeydown="if(event.key=='Enter')typeCheck()">`;
+ const act=!t.chk?`<button class="b" onclick="typeCheck()">Periksa</button><button class="b s" style="margin-top:8px" onclick="typeSkip()">Tidak tahu</button>`
+ :t.chk=='ok'?`<button class="b" onclick="typeNext()">Lanjut</button>`:`<div class="g"><button class="b s" style="margin:0" onclick="typeNext(1)">Aku benar (salah ketik)</button><button class="b" style="margin:0" onclick="typeNext()">Lanjut</button></div>`;
+ return barTop(Math.round(t.i/t.q.length*100),(t.i+1)+' / '+t.q.length)+`<div class="tools"><span class="m" style="align-self:center">Ketik jawaban</span><button class="ib" onclick="go('study')">Keluar</button></div>
+<div class="c fc"><button class="spk" onclick="sp(${c.id})" aria-label="Putar suara">${ic('spk',22)}</button>${front}<div class="sep"></div>${body}</div><div class="act"><div>${act}</div></div>`}
+
+/* ---------- Cocokkan pasangan ---------- */
+let MT=null;
+function startMatch(){const pool=D.cards.filter(fb);if(pool.length<6){toast('Butuh minimal 6 kotoba.');return}
+ const pick=sh(pool).slice(0,Math.min(18,Math.floor(pool.length/6)*6)),rounds=[];for(let i=0;i<pick.length;i+=6)rounds.push(pick.slice(i,i+6).map(c=>c.id));
+ S=null;QZ=null;T=null;TM=null;MT={rounds,r:0,miss:0,t0:Date.now(),fin:0,bad:null};matchRound();lockWL();render()}
+function matchRound(){const m=MT,ids=m.rounds[m.r];m.L=ids.slice();m.Rt=sh(ids);m.done=[];m.sel=null}
+function matchTap(side,id){const m=MT;if(!m||m.bad||m.fin||m.done.includes(id))return;
+ if(!m.sel||m.sel.side==side){m.sel={side,id};render(1);return}
+ if(m.sel.id==id){m.done.push(id);m.sel=null;render(1);
+  if(m.done.length==m.L.length)setTimeout(()=>{if(MT!==m)return;if(m.r+1<m.rounds.length){m.r++;matchRound()}else{m.fin=1;relWL();const n=m.rounds.flat().length;logPrac('cocok',n+m.miss,n);badgeCheck()}render()},450);
+  return}
+ m.miss++;m.bad=[m.sel,{side,id}];render(1);setTimeout(()=>{if(MT!==m)return;m.bad=null;m.sel=null;render(1)},550)}
+function matchView(){const m=MT,tot=m.rounds.flat().length;
+ if(m.fin){const secs=Math.max(1,Math.round((Date.now()-m.t0)/1000));return`<h2>Selesai</h2><div class="c"><div class="n">${fmtMin(secs)}</div><div class="m">${tot} pasangan · salah pilih ${m.miss} kali</div>${scoreLine()}</div><div class="act"><div class="g"><button class="b s" onclick="go('home')" style="margin:0">Home</button><button class="b" onclick="startMatch()" style="margin:0">Main lagi</button></div></div>`}
+ const st=(side,id)=>m.done.includes(id)?' ok':m.bad&&m.bad.some(b=>b.side==side&&b.id==id)?' no':m.sel&&m.sel.side==side&&m.sel.id==id?' on':'';
+ return barTop(Math.round((m.r*6+m.done.length)/tot*100),'Babak '+(m.r+1)+' / '+m.rounds.length)+`<div class="tools"><span class="m" style="align-self:center">Cocokkan pasangan</span><button class="ib" onclick="go('study')">Keluar</button></div><p class="m">Ketuk kata Jepang, lalu ketuk artinya.</p>
+<div class="mtg"><div>${m.L.map(id=>{const c=cardById(id);return`<button class="mt${st('L',id)}" onclick="matchTap('L',${id})"><span class="jj">${E(c.jp||c.ro)}</span>${c.jp&&c.ro?`<small>${E(c.ro)}</small>`:''}</button>`}).join('')}</div><div>${m.Rt.map(id=>{const c=cardById(id);return`<button class="mt${st('R',id)}" onclick="matchTap('R',${id})">${E(c.me)}</button>`}).join('')}</div></div>`}
+
+/* ---------- Tantangan 60 detik ---------- */
+let TM=null,TMH=null;
+function startT60(){const pool=D.cards.filter(fb);if(pool.length<4){toast('Butuh minimal 4 kotoba.');return}
+ S=null;QZ=null;T=null;MT=null;TM={end:Date.now()+6e4,ok:0,no:0,pool,fin:0};t60Next();clearInterval(TMH);TMH=setInterval(t60Tick,250);lockWL();render()}
+function t60Next(){const m=TM,c=m.pool[Math.floor(Math.random()*m.pool.length)],dir=Math.random()<.5?'jp':'id',
+ oth=sh(m.pool.filter(x=>x.id!=c.id&&(dir=='jp'?x.me!=c.me:(x.jp||x.ro)!=(c.jp||c.ro)))).slice(0,3);m.cur={c,dir,opts:sh(oth.concat([c]))}}
+function t60Pick(k){const m=TM;if(!m||m.fin)return;const it=m.cur;if(it.opts[k].id==it.c.id)m.ok++;else m.no++;t60Next();render(1)}
+function t60Tick(){const m=TM;if(!m){clearInterval(TMH);return}const left=Math.max(0,m.end-Date.now());
+ if(left<=0&&!m.fin){m.fin=1;clearInterval(TMH);relWL();logPrac('t60',m.ok+m.no,m.ok);const b=D.set.best60||0;m.nb=m.ok>b&&m.ok>0;if(m.nb){D.set.best60=m.ok;save()}badgeCheck();render();return}
+ const v=$('#tmv'),b=$('#tmb');if(v)v.textContent=Math.ceil(left/1000);if(b)b.style.width=(left/600)+'%'}
+function t60View(){const m=TM;
+ if(m.fin)return`<h2>Waktu habis</h2><div class="c"><div class="n">${m.ok} <small>benar · ${m.no} salah</small></div><div class="m">${m.nb?'Rekor baru!':'Rekor kamu: '+(D.set.best60||0)+' benar'}</div>${scoreLine()}</div><div class="act"><div class="g"><button class="b s" onclick="go('home')" style="margin:0">Home</button><button class="b" onclick="startT60()" style="margin:0">Coba lagi</button></div></div>`;
+ const it=m.cur,c=it.c,left=Math.max(0,m.end-Date.now());
+ return`<div class="top"><div class="pg"><i id="tmb" style="width:${left/600}%"></i></div><span class="m"><b id="tmv" style="font-size:20px">${Math.ceil(left/1000)}</b> dtk</span></div><div class="tools"><span class="m" style="align-self:center">Benar ${m.ok} · Salah ${m.no}</span><button class="ib" onclick="go('study')">Keluar</button></div>
+<div class="c fc" style="min-height:150px;padding:20px 12px">${it.dir=='jp'?`<div class="jp" style="font-size:38px">${E(c.jp||c.ro)}</div>${c.jp&&c.ro?`<div class="ro">${E(c.ro)}</div>`:''}`:`<div class="mean" style="font-size:28px">${E(c.me)}</div>`}</div>`+
+ it.opts.map((o,k)=>`<button class="op" onclick="t60Pick(${k})">${it.dir=='jp'?E(o.me):E(o.jp||o.ro)+(o.jp&&o.ro?` <span class="m">${E(o.ro)}</span>`:'')}</button>`).join('')}
+
+/* ---------- Tanya AI (salin pertanyaan) ---------- */
+function askAI(id){const c=cardById(id);if(!c)return;
+ const t=`Jelaskan kata bahasa Jepang "${c.jp||c.ro}"${c.jp&&c.ro?' ('+c.ro+')':''} yang artinya "${c.me}". Berikan: 1) cara baca dan arti, 2) tiga contoh kalimat sederhana (tulisan Jepang, romaji, dan arti Indonesia), 3) satu jembatan keledai supaya mudah diingat. Pakai bahasa Indonesia yang sederhana untuk pemula.`;
+ const fb2=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Pertanyaan disalin. Tempel di Claude atau ChatGPT.')}catch(e){toast('Gagal menyalin')}ta.remove()};
+ try{navigator.clipboard.writeText(t).then(()=>toast('Pertanyaan disalin. Tempel di Claude atau ChatGPT.')).catch(fb2)}catch(e){fb2()}}
+
+/* ---------- Lencana ---------- */
+function badgeStats(){const m=dayCounts(),st=streakInfo(m),lr=D.cards.filter(learned),pr=D.prac||[];
+ return{rev:D.hist.length,lr:lr.length,hf:D.cards.filter(c=>c.rc&&sc(c)>=HAFAL).length,best:st.best,lit:starInfo().lit,
+  qp:D.quiz.filter(q=>q.n>=10&&q.ok==q.n).length,b60:D.set.best60||0,ty:pr.filter(x=>x.m=='ketik').reduce((a,x)=>a+x.ok,0),mt:pr.filter(x=>x.m=='cocok').length,
+  bab:D.batches.filter(b=>{const cs=D.cards.filter(c=>c.b==b.id);return cs.length>=10&&cs.every(learned)}).length,bak:D.set.lastBackup?1:0,ear:D.quiz.filter(q=>q.k=='ear').length}}
+const BADGES=[
+ ['r1','Langkah pertama','Jawab 1 kartu',s=>[s.rev,1]],['r100','Seratus jawaban','100 jawaban kartu',s=>[s.rev,100]],['r1000','Seribu jawaban','1000 jawaban kartu',s=>[s.rev,1000]],
+ ['l50','50 kata','Pelajari 50 kotoba',s=>[s.lr,50]],['l200','200 kata','Pelajari 200 kotoba',s=>[s.lr,200]],['l500','500 kata','Pelajari 500 kotoba',s=>[s.lr,500]],['l1000','1000 kata','Pelajari 1000 kotoba',s=>[s.lr,1000]],
+ ['h10','10 hafal','10 kotoba hafal (skor 90+)',s=>[s.hf,10]],['h50','50 hafal','50 kotoba hafal',s=>[s.hf,50]],['h200','200 hafal','200 kotoba hafal',s=>[s.hf,200]],
+ ['s3','3 hari beruntun','Belajar 3 hari berturut-turut',s=>[s.best,3]],['s7','Seminggu penuh','7 hari beruntun',s=>[s.best,7]],['s30','Sebulan penuh','30 hari beruntun',s=>[s.best,30]],
+ ['bab','Bab tamat','Semua kata satu bab sudah dipelajari',s=>[s.bab,1]],['qz','Kuis sempurna','Semua benar di kuis 10 soal',s=>[s.qp,1]],['ear','Telinga tajam','Selesaikan kuis dengar',s=>[s.ear,1]],
+ ['ty','Jari cepat','20 jawaban ketik benar',s=>[s.ty,20]],['mt','Pemasang','Selesaikan cocokkan pasangan',s=>[s.mt,1]],['t60','Kilat','20 benar dalam 60 detik',s=>[s.b60,20]],
+ ['bk','Aman','Buat backup pertama',s=>[s.bak,1]],['st10','10 bintang','10 bintang menyala',s=>[s.lit,10]],['st34','Langit penuh','Semua bintang menyala',s=>[s.lit,STAR_TOT]]];
+const bdOn=(b,s)=>{const p=b[3](s);return p[0]>=p[1]};
+function badgeCheck(){const s=badgeStats();if(!D.set.bdg){D.set.bdg=BADGES.filter(b=>bdOn(b,s)).map(b=>b[0]);save();return[]}
+ const nw=BADGES.filter(b=>bdOn(b,s)&&!D.set.bdg.includes(b[0]));if(nw.length){D.set.bdg=D.set.bdg.concat(nw.map(b=>b[0]));save();toast('Lencana baru: '+nw.map(b=>b[1]).join(', '))}return nw}
+const medal=on=>`<svg viewBox="0 0 48 48" style="width:52px;height:52px;display:block;margin:0 auto 6px" aria-hidden="true"><circle cx="24" cy="24" r="21" style="fill:${on?'var(--stargold)':'none'};fill-opacity:.2;stroke:${on?'var(--stargold)':'var(--staroff)'}" stroke-width="2"/><path d="M24 11l3.4 7.2 7.8.9-5.8 5.4 1.6 7.7L24 28.2 17 32.2l1.6-7.7-5.8-5.4 7.8-.9z" style="fill:${on?'var(--stargold)':'var(--staroff)'}"/></svg>`;
+function stBdg(){const s=badgeStats(),n=BADGES.filter(b=>bdOn(b,s)).length;
+ return`<div class="c"><div class="n">${n} <small>/ ${BADGES.length} lencana</small></div><div class="pg" style="margin-top:10px"><i style="width:${Math.round(n/BADGES.length*100)}%"></i></div></div><div class="cg">${BADGES.map(b=>{const p=b[3](s),on=p[0]>=p[1];return`<div class="c" style="${on?'':'opacity:.7'}">${medal(on)}<b>${b[1]}</b><div class="m">${b[2]}</div><div class="m">${on?'Tercapai':Math.min(p[0],p[1])+' / '+p[1]}</div></div>`}).join('')}</div>`}
+
+/* ---------- Statistik: latihan ---------- */
+function stLat(){const P=D.prac||[],Q=D.quiz,rows=[['Kuis cepat',Q.filter(q=>!q.k).map(q=>[q.n,q.ok])],['Kuis dengar',Q.filter(q=>q.k=='ear').map(q=>[q.n,q.ok])],['Ketik jawaban',P.filter(x=>x.m=='ketik').map(x=>[x.n,x.ok])],['Cocokkan pasangan',P.filter(x=>x.m=='cocok').map(x=>[x.n,x.ok])],['Tantangan 60 detik',P.filter(x=>x.m=='t60').map(x=>[x.n,x.ok])],['Memory (pasangan / langkah)',P.filter(x=>x.m=='memori').map(x=>[x.n,x.ok])]];
+ if(!P.length&&!Q.length)return empty('Belum ada latihan. Coba menu Belajar, bagian Latihan.');
+ const L=[].concat(Q.map(q=>({at:q.at,t:q.k=='ear'?'Kuis dengar':'Kuis cepat',n:q.n,ok:q.ok})),P.map(x=>({at:x.at,t:({ketik:'Ketik jawaban',cocok:'Cocokkan pasangan',t60:'Tantangan 60 detik',memori:'Memory'})[x.m]||x.m,n:x.n,ok:x.ok}))).sort((a,b)=>b.at-a.at).slice(0,8);
+ return`<div class="c"><p class="ct">Per jenis latihan</p><p class="cs">Jumlah sesi dan persen jawaban benar.</p><div class="tbw"><table class="tb"><tr><th></th><th>Sesi</th><th>Benar</th></tr>${rows.map(r=>{const n=r[1].reduce((a,x)=>a+x[0],0),ok=r[1].reduce((a,x)=>a+x[1],0);return`<tr><td>${r[0]}</td><td>${r[1].length}</td><td>${n?Math.round(100*ok/n)+'%':'–'}</td></tr>`}).join('')}</table></div>${D.set.best60?`<div class="r" style="margin-top:6px"><span>Rekor 60 detik</span><b>${D.set.best60} benar</b></div>`:''}</div>
+<div class="c"><p class="ct">Terakhir</p>${L.map(x=>`<div class="r"><span>${x.t} <span class="m">${fd(x.at)}</span></span><b>${x.ok} / ${x.n}</b></div>`).join('')}</div>`}
+
+/* ---------- Statistik: ringkasan yang mudah ---------- */
+function weekBlock(){const H=D.hist,m=dayCounts(),a0=dstart(6),b0=dstart(13),wk=H.filter(x=>x.at>=a0),pv=H.filter(x=>x.at>=b0&&x.at<a0);
+ const days=n=>{let d=0;for(let i=0;i<7;i++)if(m[dstart(i+n)])d++;return d},d1=days(0),d2=days(7),a1=accOf(wk),a2=accOf(pv),n1=D.cards.filter(c=>c.first>=a0).length,n2=D.cards.filter(c=>c.first>=b0&&c.first<a0).length;
+ const hard=D.cards.filter(c=>c.lp>0).sort((x,y)=>y.lp-x.lp)[0];
+ let t=`Minggu ini kamu belajar ${d1} dari 7 hari dan menjawab ${wk.length} kartu`+(a1!=null?`, akurasi ${a1}%`:'')+'.';
+ if(a1!=null&&a2!=null){const d=a1-a2;t+=d>0?` Akurasimu naik ${d} poin dari minggu lalu.`:d<0?` Akurasimu turun ${-d} poin dari minggu lalu.`:' Akurasimu sama dengan minggu lalu.'}
+ if(hard)t+=` Kata yang paling sering kamu lupa: ${E(hard.jp||hard.ro)} (${E(hard.me)}), ${hard.lp} kali.`;
+ const df=(a,b,suf)=>a==null||b==null?'–':a>b?`<span style="color:var(--ok)">▲ ${a-b}${suf||''}</span>`:a<b?`<span style="color:var(--bad)">▼ ${b-a}${suf||''}</span>`:'=';
+ const cmp=`<div class="tbw"><table class="tb"><tr><th></th><th>Minggu ini</th><th>Minggu lalu</th><th>Selisih</th></tr><tr><td>Hari belajar</td><td>${d1}</td><td>${d2}</td><td>${df(d1,d2)}</td></tr><tr><td>Jawaban</td><td>${wk.length}</td><td>${pv.length}</td><td>${df(wk.length,pv.length)}</td></tr><tr><td>Kata baru</td><td>${n1}</td><td>${n2}</td><td>${df(n1,n2)}</td></tr><tr><td>Akurasi</td><td>${a1==null?'–':a1+'%'}</td><td>${a2==null?'–':a2+'%'}</td><td>${df(a1,a2,' poin')}</td></tr></table></div>`;
+ const nw14=D.cards.filter(c=>c.first>=dstart(13)).length,rate=nw14/14,left=D.cards.filter(c=>!learned(c)).length;
+ const fc=!left?'Semua kotoba sudah kamu pelajari.':rate>0?`Dua minggu terakhir kamu mempelajari ±${rate<1?rate.toFixed(1):Math.round(rate)} kata baru per hari. Sisa ${left} kata belum dipelajari, jadi semuanya selesai dipelajari sekitar <b>${fd(Date.now()+Math.ceil(left/rate)*DAY)}</b>. Supaya hafal, tetap ulang sesuai jadwal.`:`Belum ada kata baru yang dipelajari dalam dua minggu terakhir. Sisa ${left} kata belum dipelajari.`;
+ const lv={};D.cards.forEach(c=>{const k=c.lv||'Tanpa level',o=lv[k]||(lv[k]={t:0,l:0,h:0});o.t++;if(learned(c))o.l++;if(c.rc&&sc(c)>=HAFAL)o.h++});
+ const lvh=Object.keys(lv).sort().map(k=>{const o=lv[k];return`<div class="hb"><span class="hl">${E(k)}</span><span class="ht" style="position:relative"><i style="position:absolute;left:0;width:${Math.round(o.l/o.t*100)}%;background:var(--starlit);opacity:.5"></i><i style="position:absolute;left:0;width:${Math.round(o.h/o.t*100)}%;background:var(--stargold)"></i></span><span class="hv">${o.h} / ${o.t}</span></div>`}).join('');
+ return`<div class="c"><p class="ct">Ringkasan minggu ini</p><p style="margin:6px 0 10px">${t}</p>${cmp}</div><div class="c"><p class="ct">Perkiraan selesai</p><p style="margin:6px 0 0">${fc}</p></div><div class="c"><p class="ct">Peta level</p><p class="cs">Bar emas = hafal, bar biru muda = sudah dipelajari. Angka: hafal / total.</p>${lvh}</div>`}
+
+/* ---------- Tema ---------- */
+const THEMES=[['cosmos','Galaksi','linear-gradient(160deg,#060917,#2a1d6e)'],['aurora','Aurora','linear-gradient(160deg,#04121a,#13a07a)'],['sakura','Sakura senja','linear-gradient(160deg,#2a1030,#d66a92)'],['forest','Hutan malam','linear-gradient(160deg,#04130c,#3f8a4e)'],['ocean','Laut dalam','linear-gradient(160deg,#03142b,#0f8fbf)'],['system','Polos (ikuti sistem)','linear-gradient(160deg,#f6f4ee,#161a30)'],['light','Polos terang','#f6f4ee'],['dark','Polos gelap','#0c1024']];
+function themePick(){return`<div class="thm">${THEMES.map(t=>`<button class="${D.set.theme==t[0]?'on':''}" style="background:${t[2]}" onclick="setS('theme','${t[0]}')"><span>${t[1]}</span></button>`).join('')}</div>`}
+
+/* ---------- Menu belajar ---------- */
+const mode=(fn,t,d)=>`<button class="op" onclick="${fn}"><b>${t}</b><br><span class="m">${d}</span></button>`;
+function studyMenu(){return`<h2>Belajar</h2><div class="c"><span class="m">Pilih bab (opsional)</span><select id="sel-bab" onchange="SB=this.value;render(1)"><option value="">Semua bab</option>${D.batches.map(b=>`<option value="${b.id}"${SB==b.id?' selected':''}>Bab ${b.day} ${E(b.name)}</option>`).join('')}</select></div>
+<h3>Kartu dengan jadwal otomatis</h3><button class="b" onclick="start('new')">Kotoba baru</button><button class="b" onclick="start('rev')">Review hari ini</button><button class="b s" onclick="start('mix')">Campur</button><div class="g"><button class="b s" onclick="start('hard')">Kata sulit</button><button class="b s" onclick="start('leech')">Kata bandel</button></div><button class="b s" onclick="start('all')">Semua kotoba</button>
+<h3>Latihan</h3>${mode('startType()','Ketik jawaban','Ketik romaji atau arti. Hasilnya ikut mengatur jadwal review.')}${mode("startQuiz('ear')",'Kuis dengar','Dengar suaranya, pilih artinya. Jadwal tidak berubah.')}${mode('startMatch()','Cocokkan pasangan','Hubungkan kata Jepang dengan artinya, 6 pasang per babak.')}${mode('startT60()','Tantangan 60 detik','Jawab sebanyak mungkin sebelum waktu habis. Ada rekor.')}${mode('startQuiz()','Kuis cepat','10 soal pilihan ganda. Jadwal tidak berubah.')}`}
+
+
+/* ================= v6: Galaxy Edition ================= */
+const IC={
+ back:'<path d="M15 5l-7 7 7 7"/>',chevron:'<path d="M9 5l7 7-7 7"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ bolt:'<path d="M13 2L5 14h6l-1 8 8-12h-6z"/>',
+ shuf:'<path d="M3 7h4l10 10h4M3 17h4l3-3M14 10l3-3h4M18 4l3 3-3 3M18 14l3 3-3 3"/>',
+ list:'<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+ book:'<path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z"/><path d="M12 6v14"/>',
+ refresh:'<path d="M20 11a8 8 0 10-2.3 6.3"/><path d="M20 4v7h-7"/>',
+ game:'<rect x="3" y="8" width="18" height="10" rx="5"/><path d="M8 11v4M6 13h4"/><circle cx="15.5" cy="12" r=".8"/><circle cx="17.5" cy="14" r=".8"/>',
+ ai:'<rect x="5" y="8" width="14" height="10" rx="4"/><path d="M12 4v4"/><circle cx="9.5" cy="13" r="1"/><circle cx="14.5" cy="13" r="1"/>',
+ imp:'<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>',more:'<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>',
+ check:'<path d="M5 12l5 5 9-10"/>',star:'<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7L12 3z"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 5-7 8-7s7 2 8 7"/>',
+ trophy:'<path d="M8 4h8v5a4 4 0 01-8 0z"/><path d="M8 6H4v2a3 3 0 003 3M16 6h4v2a3 3 0 01-3 3M12 13v4M8 20h8"/>',
+ galaxy:'<circle cx="12" cy="12" r="4.5"/><ellipse cx="12" cy="12" rx="10" ry="3.6" transform="rotate(-22 12 12)"/>',
+ chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
+ gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+ target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+ note:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',search:'<circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',layers:'<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/>',
+ ear:'<path d="M7 10a5 5 0 1110 0c0 3-3 3.5-3 6.5a2.5 2.5 0 01-5 0"/><path d="M10 10a2 2 0 014 0"/>',
+ spk:'<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 010 6"/><path d="M18 6.5a8 8 0 010 11"/>',
+ send:'<path d="M4 12l16-8-6 16-3-7z"/>',flame:'<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 01-10 0c0-2 1-3 2-4 .3 1.5 1 2 2 2-1-3 0-5 1-8z"/>',
+ gram:'<path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6"/>',swap:'<path d="M7 7h12l-3-3M17 17H5l3 3"/>',
+ keyboard:'<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8"/>',
+ help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 015 .5c0 1.5-2.5 2-2.5 3.5M12 17h.01"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',palette:'<path d="M12 3a9 9 0 100 18c1.5 0 2-1 1.5-2-.6-1.2.2-2.5 1.6-2.5H17a4 4 0 004-4c0-5-4-9.5-9-9.5z"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16" cy="11" r="1"/>',
+ save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',cards:'<rect x="3" y="6" width="12" height="14" rx="2"/><path d="M8 3h11a2 2 0 012 2v11"/>'};
+const I=(n,s)=>`<svg class="ic" viewBox="0 0 24 24" width="${s||22}" height="${s||22}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||''}</svg>`;
+const fmtN=n=>Number(n).toLocaleString('id-ID');
+const XPV={ingat:10,mudah:12,sulit:6,lupa:3};
+function xpTotal(){let x=0;D.hist.forEach(h=>x+=XPV[h.r]||0);(D.prac||[]).forEach(p=>x+=p.ok*4);D.quiz.forEach(q=>x+=q.ok*4);return x}
+function lvInfo(){const x=xpTotal();return{x,lv:Math.floor(x/1000)+1,cur:x%1000}}
+const QUOTES=['Sedikit demi sedikit, lama-lama jadi bukit.','Langkah kecil hari ini, masa depan yang besar.','Konsisten hari ini, hasil besar nanti.','Bintang-bintang tidak dicapai dalam satu malam.','七転び八起き: jatuh tujuh kali, bangkit delapan kali.'];
+const quoteOf=()=>QUOTES[Math.floor(Date.now()/DAY)%QUOTES.length];
+function catCounts(){let h=0,l=0,b=0,m=0;D.cards.forEach(c=>{if(!learned(c)){b++;return}const s=sc(c);if(s>=HAFAL)h++;else if(s<40)l++;else m++});return{h,l,b,m}}
+function donut(parts,size){const r=size/2-9,C=2*Math.PI*r,tot=parts.reduce((a,p)=>a+p.v,0)||1;let off=0;
+ const segs=parts.filter(p=>p.v>0).map(p=>{const len=p.v/tot*C,s=`<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" style="stroke:${p.c}" stroke-width="11" stroke-dasharray="${Math.max(0,len-2)} ${C-Math.max(0,len-2)}" stroke-dashoffset="${-off}"/>`;off+=len;return s}).join('');
+ return`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="transform:rotate(-90deg);display:block" aria-hidden="true"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" style="stroke:var(--staroff)" stroke-width="11" opacity=".35"/>${segs}</svg>`}
+function copyTxt(t,msg){const f=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast(msg)}catch(e){toast('Gagal menyalin')}ta.remove()};
+ try{navigator.clipboard.writeText(t).then(()=>toast(msg)).catch(f)}catch(e){f()}}
+let LP=0,RV=3,RG='7',ACT='bdg',IMT='file',AIM=[],AIQ='',MG=null;const OP=new Set();
+function togOp(id,o){if(o)OP.add(id);else OP.delete(id)}
+const BACK={music:'home',study:'home',review:'home',game:'home',ai:'home',more:'home',goal:'home',words:'more',add:'more',imp:'more',batch:'more',listen:'more',gram:'more',ach:'prof',dream:'prof',set:'prof'};
+function hdr(t,right){const b=BACK[V];return`<div class="hd">${b?`<button class="bk" onclick="go('${b}')" aria-label="Kembali">${I('back',20)}</button>`:''}<h2>${t}</h2><div class="hr">${right||''}</div></div>`}
+function sg(items,cur,fn){return`<div class="sg">${items.map(t=>`<button class="${cur==t[0]?'on':''}" onclick="${fn}('${t[0]}')">${t[1]}</button>`).join('')}</div>`}
+const row=(fn,ico,t,sub,tc)=>`<button class="row" onclick="${fn}"><span class="ri" style="--tc:${tc||'var(--ac)'}">${I(ico,22)}</span><span class="rt2"><b>${t}</b>${sub?`<small>${sub}</small>`:''}</span>${I('chevron',18)}</button>`;
+
+/* ---------- skor game ---------- */
+function logPrac(m,n,ok,pts){if(pts==null)pts=m=='cocok'?Math.max(0,ok*60-(n-ok)*40):ok*50;LP=pts;if(pts>(D.set.hi||0))D.set.hi=pts;D.prac.push({at:Date.now(),m,n,ok,pts});if(D.prac.length>500)D.prac.shift();save()}
+const scoreLine=()=>LP?`<div class="m">Skor ${fmtN(LP)}${LP>=(D.set.hi||0)?' · skor tertinggi!':''}</div>`:'';
+
+/* ---------- Splash ---------- */
+function begin(){D.set.splashDay=sod();save();go('home')}
+function splashView(){return`<div class="spl"><div class="spc">${consSVG(CONS[2],0,1)}</div>
+<svg class="spc2" viewBox="0 0 200 130" aria-hidden="true"><defs><linearGradient id="cm" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient></defs><path d="M10 20Q80 40 170 100" stroke="url(#cm)" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="170" cy="100" r="5" fill="#fff"/><circle cx="170" cy="100" r="12" fill="#9ab" opacity=".25"/></svg>
+<div class="spt"><h1 class="logo">Kotoba<br><span>Memory</span></h1><p class="tag2">Jelajahi Bahasa Jepang<br>Satu Kata, Satu Langkah,<br>Menuju Mimpi.</p></div>
+<svg class="hill" viewBox="0 0 360 280" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><path d="M0 120Q80 98 170 112T360 104V280H0Z" fill="#05071d"/><g fill="#05071d" transform="translate(112 112) scale(2) translate(-112 -112)"><circle cx="112" cy="84" r="9"/><path d="M104 94Q96 112 104 124L148 124Q140 106 130 98Q122 92 118 92Z"/><path d="M104 124L128 104 150 124Z"/></g><path d="M0 120Q80 98 170 112T360 104" fill="none" stroke="rgba(130,140,255,.5)" stroke-width="1.2"/></svg>
+<div class="spb"><button class="b" onclick="begin()">Mulai</button><div class="m ed">Galaxy Edition<br>ことば メモリー</div></div></div>`}
+
+/* ---------- Beranda ---------- */
+function homeView(){SB='';
+ const L=lvInfo(),cc=catCounts(),td=D.hist.filter(x=>x.at>=sod()),goal=D.set.goal||30,pct=Math.min(100,Math.round(td.length/goal*100)),st=streakInfo(dayCounts()),tg=(D.set.dream&&D.set.dream.target)||3000,
+ nl=newLeft(),dueN=D.cards.filter(due).length,bd=D.set.lastBackup?Math.floor((Date.now()-D.set.lastBackup)/DAY):null;
+ let h=`<div class="prof"><div class="av">${I('user',26)}</div><div class="pi"><div class="pn"><b>${E(D.set.name||'Pelajar')}</b><span class="lv">Lv. ${L.lv} ${I('star',12)}</span><span class="xp">${fmtN(L.cur)} / 1.000 XP</span></div><div class="pg"><i style="width:${L.cur/10}%"></i></div></div><button class="mbtn ${MUS.on?'on':''}" onclick="go('music')" aria-label="Musik">${I('music',20)}</button></div><p class="quote">“${quoteOf()}”</p>`;
+ h+=`<div class="c tot"><div><div class="m">Total Kotoba</div><div class="big2">${fmtN(D.cards.length)}</div><div class="m">(dari target ${fmtN(tg)})</div></div><div class="leg2">${[['Hafal',cc.h,'var(--ok)'],['Belajar',cc.m,'var(--hd)'],['Lupa',cc.l,'var(--bad)'],['Baru',cc.b,'var(--ok2)']].map(x=>`<div><i style="background:${x[2]}"></i><span>${x[0]}</span><b>${fmtN(x[1])}</b></div>`).join('')}</div></div>`;
+ if(D.cards.length){const hint=dueN>0?[`Ada ${dueN} kata yang perlu diulang hari ini. Mulai dari Review supaya tidak lupa.`,"start('rev')",'refresh']:nl>0?[`Pelajari ${Math.min(nl,10)} kata baru hari ini, sedikit demi sedikit.`,"start('new')",'book']:['Semua tugas hari ini selesai. Santai dulu dengan game atau musik.',"go('game')",'game'];h+=`<div class="c hint lk" onclick="${hint[1]}"><span class="hi2">${I(hint[2],22)}</span><div><div class="m">Saran hari ini</div><b>${hint[0]}</b></div></div>`}
+ if(!D.cards.length)h+=`<div class="c">Belum ada kotoba. Mulai dengan menambah kata atau menempel daftar kotoba.</div><button class="b" onclick="go('imp')">Tempel kotoba</button><button class="b s" onclick="go('add')">Tambah satu kata</button>`;
+ const T6=[['study','Belajar','book',nl,'#6f7dff',nl+' kata baru'],['review','Review','refresh',dueN,'#a78bfa',dueN+' perlu diulang'],['game','Game','game',0,'#2de1d3','Latihan seru'],['ai','AI Asisten','ai',0,'#60a5fa','Tanya soal kata'],['imp','Impor','imp',0,'#818cf8','Tambah banyak kata'],['more','Lainnya','more',0,'#94a3ff','Menu lain']];
+ h+=`<div class="tg">${T6.map(t=>`<button class="tile" onclick="go('${t[0]}')" style="--tc:${t[4]}"><span class="ti2">${I(t[2],26)}${t[3]?`<em class="nb">${t[3]>99?'99+':t[3]}</em>`:''}</span><span class="tl">${t[1]}</span><small>${t[5]}</small></button>`).join('')}</div>`;
+ h+=`<div class="c lk" onclick="go('goal')"><div class="r2"><b>Progress Hari Ini</b>${st.cur?`<span class="chip">${I('flame',14)} ${st.cur} hari</span>`:''}</div><div class="r2 m"><span>${td.length}/${goal}</span><span>${pct}%</span></div><div class="pg"><i style="width:${pct}%"></i></div></div>`;
+ if(D.cards.length>=20&&(bd==null||bd>=7))h+=`<div class="c lk" onclick="go('set')"><b>Saatnya backup</b><div class="m">${bd==null?'Kamu belum pernah backup.':'Backup terakhir '+bd+' hari lalu.'} Data hanya ada di HP ini. Ketuk untuk membuat backup.</div></div>`;
+ return h}
+
+/* ---------- Belajar ---------- */
+function studyMenu(){const sm=D.set.smode||'normal';
+ return hdr('Belajar Kotoba')+`<h3>Mode belajar</h3>${sg([['normal','Normal'],['acak','Acak'],['mudah','Mudah']],sm,"setSm")}<p class="m" style="margin:6px 2px 0">Normal: urut sesuai jadwal. Acak: urutan diacak. Mudah: romaji selalu terlihat.</p>
+<div class="c" style="margin-top:14px"><span class="m">Pilih bab (opsional)</span><select id="sel-bab" onchange="SB=this.value;render(1)"><option value="">Semua bab</option>${D.batches.map(b=>`<option value="${b.id}"${SB==b.id?' selected':''}>Bab ${b.day} ${E(b.name)}</option>`).join('')}</select></div>
+<button class="b" onclick="start('new')">Kotoba baru</button><button class="b" onclick="start('rev')">Review hari ini</button><button class="b s" onclick="start('mix')">Campur</button><div class="g"><button class="b s" onclick="start('hard')">Kata sulit</button><button class="b s" onclick="start('leech')">Kata bandel</button></div><button class="b s" onclick="start('all')">Semua kotoba</button>`}
+function setSm(k){D.set.smode=k;save();render(1)}
+function setMode2(k){if(!S)return;S.mode=k;if(k=='acak'){const t=S.q.slice(S.i).sort(()=>Math.random()-.5);S.q=S.q.slice(0,S.i).concat(t)}render(1)}
+
+/* ---------- Review ---------- */
+function reviewView(){const td=D.hist.filter(x=>x.at>=sod()),k=new Set(td.map(x=>x.c)).size,wr=td.filter(x=>x.r=='lupa').length,dueN=D.cards.filter(due).length,
+ lm=D.cards.filter(c=>learned(c)&&sc(c)<70).sort((a,b)=>sc(a)-sc(b)).slice(0,5),cnt=n=>D.cards.filter(c=>learned(c)&&c.next<=sod()+(n+1)*DAY-1).length;
+ return hdr('Review','<span class="hi">'+I('cal',22)+'</span>')+`<div class="c r3"><div><div class="m">Hari ini</div><div class="n">${k} <small>kata</small></div></div><div><div class="n er">${wr} <small>salah</small></div></div></div>
+${row("start('leech')",'bolt','Review Cepat','Kata yang sering salah','#fbbf24')}${row("start('rand')",'shuf','Review Random','Acak semua kata yang sudah dipelajari','#a78bfa')}${row("start('rev')",'cal','Review Berdasarkan Tanggal','Kata yang harus diulang'+(dueN?' ('+dueN+')':''),'#6f7dff')}
+<h3>Jadwal review</h3><div class="c"><div class="chs">${[1,3,5,7,14,30].map(n=>`<button class="${RV==n?'on':''}" onclick="RV=${n};render(1)">${n}</button>`).join('')}</div><p class="m" style="margin:12px 0 0;text-align:center">Dalam ${RV} hari ke depan: <b>${cnt(RV)}</b> kata dijadwalkan (termasuk yang terlambat).</p></div>
+<h3>Kata perlu perhatian</h3><div class="c">${lm.map(c=>`<div class="r lk" onclick="CD=${c.id};render()"><span>${E(c.jp||c.ro)} · ${E(c.me)}</span><b>${sc(c)}/100</b></div>`).join('')||'<span class="m">Belum ada data.</span>'}</div>`}
+
+/* ---------- Statistik ---------- */
+const STT=[['ikh','Ikhtisar'],['lvl','Level'],['graf','Grafik'],['kata','Kata'],['bab','Bab'],['lat','Latihan'],['ring','Ringkasan']];
+function stats(){if(!STT.some(t=>t[0]==STAB))STAB='ikh';
+ return hdr('Statistik')+`<div class="tabs">${STT.map(t=>`<button class="${STAB==t[0]?'on':''}" onclick="STAB='${t[0]}';render()">${t[1]}</button>`).join('')}</div>`+({ikh:stIkh,lvl:stLvl,graf:stGraf,kata:stKata,bab:stBab,lat:stLat,ring:stRing}[STAB])()}
+function setRG(k){RG=k;render(1)}
+function stIkh(){const tot=D.cards.length;if(!tot)return empty('Belum ada kotoba.');const cc=catCounts(),m=dayCounts(),H=D.hist;
+ const first=H.length?Math.min(...H.map(x=>x.at)):Date.now(),span=Math.max(1,Math.round((sod()-sodOf(first))/DAY)+1),N=RG=='all'?Math.min(90,Math.max(7,span)):+RG,nd=RG=='all'?span:N,since=RG=='all'?0:dstart(N-1);
+ const pts=[],labs=[];for(let i=N-1;i>=0;i--){const k=dstart(i);pts.push(m[k]?m[k].n:0);labs.push(dlab(k))}
+ const hh=H.filter(x=>x.at>=since),nw=D.cards.filter(c=>c.first!=null&&c.first>=since).length,a=accOf(hh);
+ const pc=v=>Math.round(v/tot*100);
+ return sg([['7','Minggu'],['30','Bulan'],['all','Semua']],RG,'setRG')+`<div class="c dn"><div class="dw">${donut([{v:cc.h,c:'var(--ok)'},{v:cc.m,c:'var(--hd)'},{v:cc.l,c:'var(--bad)'},{v:cc.b,c:'var(--ok2)'}],130)}<div class="dc"><div class="m">Total</div><b>${fmtN(tot)}</b><div class="m">kata</div></div></div>
+<div class="leg3">${[['Hafal',cc.h,'var(--ok)'],['Belajar',cc.m,'var(--hd)'],['Lupa',cc.l,'var(--bad)'],['Baru',cc.b,'var(--ok2)']].map(x=>`<div><i style="background:${x[2]}"></i><span>${x[0]}</span><b>${fmtN(x[1])}</b><small>${pc(x[1])}%</small></div>`).join('')}</div></div>
+<div class="c"><p class="ct">Aktivitas Belajar</p><p class="cs">Jumlah jawaban per hari${RG=='all'&&span>90?' (90 hari terakhir)':''}.</p>${lineChart(pts,labs)}</div>
+<h3>Rata-rata per hari</h3><div class="g tiles av3"><div class="c t1"><div class="n">${(nw/nd).toFixed(1).replace('.0','')}</div><div class="m">Kata baru</div></div><div class="c t2"><div class="n">${Math.round(hh.length/nd)}</div><div class="m">Review</div></div><div class="c t3"><div class="n">${a==null?'–':a+'%'}</div><div class="m">Akurasi</div></div></div>`}
+function stLvl(){const tot=D.cards.length;if(!tot)return empty('Belum ada kotoba.');
+ const lv=['N5','N4','N3','N2','N1'],extra=D.cards.filter(c=>!lv.includes(c.lv)).length,bar=(l,t,ln,hf)=>{const p=t?Math.round(ln/t*100):0;return`<div class="lvr"><span class="lvn">${l}</span><span class="pg"><i style="width:${p}%"></i></span><span class="lvv"><b>${p}%</b> <small>(${ln}/${t})</small></span></div>`};
+ const rows=lv.map(l=>{const cs=D.cards.filter(c=>c.lv==l);return bar(l,cs.length,cs.filter(learned).length)}).join('')+(extra?bar('Lainnya',extra,D.cards.filter(c=>!lv.includes(c.lv)&&learned(c)).length):'');
+ const by={};D.cards.forEach(c=>{if(c.lp>0){const b=D.batches.find(x=>x.id==c.b),k=b?'Bab '+b.day+' '+b.name:'Tanpa bab';by[k]=(by[k]||0)+c.lp}});
+ const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,5);
+ return`<div class="c"><p class="ct">Kemajuan Level</p><p class="cs">Persen kata yang sudah dipelajari, per level JLPT yang kamu isi.</p>${rows}</div><div class="c"><p class="ct">Topik Paling Sering Salah</p><p class="cs">Jumlah "Ulang" per bab.</p>${top.map((x,i)=>`<div class="r"><span>${i+1}. ${E(x[0])}</span><b>${x[1]}</b></div>`).join('')||'<p class="m" style="margin:0">Belum ada kata yang sering salah. Bagus!</p>'}</div>`}
+
+/* ---------- Peta Galaksi ---------- */
+function galaxySVG(){const cx=180,cy=205,r=rng(7),ST=consStates();let arms='',dots='';
+ for(let a=0;a<2;a++){let d='';for(let t=0;t<=1.001;t+=.04){const rad=16+t*160,ang=a*Math.PI+t*5.2;d+=(t?'L':'M')+(cx+Math.cos(ang)*rad).toFixed(1)+' '+(cy+Math.sin(ang)*rad*1.12).toFixed(1)}
+  arms+=`<path d="${d}" fill="none" stroke="rgba(120,130,255,.30)" stroke-width="28" stroke-linecap="round" filter="url(#gb)"/><path d="${d}" fill="none" stroke="rgba(200,185,255,.55)" stroke-width="2" stroke-linecap="round"/>`}
+ for(let i=0;i<150;i++){const t=r(),a=Math.floor(r()*2),rad=16+t*160+(r()-.5)*30,ang=a*Math.PI+t*5.2+(r()-.5)*.5;dots+=`<circle cx="${(cx+Math.cos(ang)*rad).toFixed(1)}" cy="${(cy+Math.sin(ang)*rad*1.12).toFixed(1)}" r="${(r()*1.3+.4).toFixed(1)}" fill="#fff" opacity="${(.3+r()*.6).toFixed(2)}"/>`}
+ const pos=[[18,28],[228,18],[8,262],[236,286],[112,336]],lvOf=l=>{const cs=D.cards.filter(c=>c.lv==l);return{t:cs.length,l:cs.filter(learned).length}};
+ const cons=CONS.map((c,i)=>consSVG(c,ST[i]).replace('<svg ',`<svg x="${pos[i][0]}" y="${pos[i][1]}" width="92" height="92" `)+`<text x="${pos[i][0]+46}" y="${pos[i][1]+104}" text-anchor="middle" class="tx" style="font-size:10px">${c.n}</text>`).join('');
+ const node=(l,x,y)=>{const o=lvOf(l),on=o.l>0;return`<g onclick="STAB='lvl';go('stats')" style="cursor:pointer"><circle cx="${x}" cy="${y}" r="26" style="fill:rgba(40,50,170,.55);stroke:${on?'var(--ac)':'var(--staroff)'}" stroke-width="2" ${on?'filter="url(#gb2)"':''}/><text x="${x}" y="${y+5}" text-anchor="middle" style="fill:#fff;font:700 15px var(--fb)">${l}</text></g>`};
+ return`<svg viewBox="0 0 360 462" class="gal" role="img" aria-label="Peta galaksi"><defs><filter id="gb" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter><filter id="gb2"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><radialGradient id="core"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".25" stop-color="#b8a8ff" stop-opacity=".6"/><stop offset="1" stop-color="#4a56f0" stop-opacity="0"/></radialGradient></defs>${arms}<circle cx="${cx}" cy="${cy}" r="62" fill="url(#core)"/>${dots}${cons}${node('N5',70,200)}${node('N4',290,170)}</svg>`}
+function mapView(){const m=moonInfo(),b=D.batches.slice().sort((a,b)=>b.at-a.at)[0];let pg='';
+ if(b){const cs=D.cards.filter(c=>c.b==b.id),p=cs.length?Math.round(cs.filter(learned).length/cs.length*100):0,lv=(cs.find(c=>c.lv)||{}).lv||'N5';pg=`<div class="c"><div class="r2"><b>Progress Saat Ini</b><span class="m">${p}%</span></div><div class="m" style="margin:2px 0 8px">${E(lv)} · Bab ${b.day} ${E(b.name)}</div><div class="pg"><i style="width:${p}%"></i></div></div>`}
+ else pg=`<div class="c m">Belum ada bab. Tempel kotoba dulu, lalu bintang mulai menyala.</div>`;
+ const si=starInfo();
+ return`<div class="hd"><h2>Peta Galaksi</h2></div><p class="m" style="margin:-6px 2px 10px">Perjalananmu di semesta kata. ${moonLine()}</p><div class="c gc" onclick="ACT='sky';go('ach')">${galaxySVG()}</div>${pg}<div class="c lk" onclick="ACT='sky';go('ach')"><div class="r2"><b>Bintang menyala</b><span class="m">${si.lit} / ${STAR_TOT} · ${si.gold} emas</span></div><div class="pg" style="margin-top:8px"><i style="width:${Math.round(si.lit/STAR_TOT*100)}%"></i></div><p class="m" style="margin:8px 0 0">${si.next?'Bintang berikutnya: '+si.next+' kotoba lagi.':'Seluruh langit menyala.'}</p></div>`}
+
+/* ---------- Profil, Pencapaian, Mimpi, Target ---------- */
+function profView(){const L=lvInfo(),s=badgeStats(),n=BADGES.filter(b=>bdOn(b,s)).length,dr=D.set.dream||{t:'N3 dalam 3 tahun',target:3000};
+ return`<div class="hd"><h2>Profil</h2></div><div class="c pc"><div class="av big">${I('user',34)}</div><div class="pi"><b style="font-size:20px">${E(D.set.name||'Pelajar')}</b><div class="m">Lv. ${L.lv} · ${fmtN(L.x)} XP total</div><div class="pg" style="margin-top:8px"><i style="width:${L.cur/10}%"></i></div><div class="m" style="margin-top:4px">${fmtN(L.cur)} / 1.000 XP ke level berikutnya</div></div></div>
+${row("go('ach')",'trophy','Pencapaian',n+' dari '+BADGES.length+' lencana','#fbbf24')}${row("go('dream')",'star','Raih Mimpi',E(dr.t),'#a78bfa')}${row("go('goal')",'target','Target Harian',(D.set.goal||30)+' kartu per hari','#2de1d3')}${row("go('set')",'gear','Pengaturan','Tema, cadangan data, bantuan','#6f7dff')}`}
+function setAct(k){ACT=k;render(1)}
+function achView(){const s=badgeStats();let body;
+ if(ACT=='sky')body=stSky();else{
+  const todo=BADGES.filter(b=>!bdOn(b,s)).map(b=>{const p=b[3](s);return{b,r:p[0]/p[1],p}}).sort((a,b)=>b.r-a.r)[0],ft=todo||{b:BADGES[BADGES.length-1],r:1,p:[1,1]},bi=BADGES.indexOf(ft.b),rs=CONS[bi%CONS.length];
+  body=`<div class="c ft"><div class="fm">${medal(ft.r>=1)}</div><b style="font-size:20px">${ft.b[1]}</b><p class="m" style="margin:4px 0 12px">${ft.b[2]}</p><div class="pg"><i style="width:${Math.min(100,Math.round(ft.r*100))}%"></i></div><div class="m" style="margin-top:6px">${Math.min(ft.p[0],ft.p[1])} / ${ft.p[1]}</div></div>
+<h3>Hadiah</h3><div class="c rw"><div class="cry"><svg viewBox="0 0 48 48" width="52" height="52"><path d="M24 3l13 14-13 28L11 17z" style="fill:var(--ac);opacity:.3;stroke:var(--ac)" stroke-width="2" stroke-linejoin="round"/><path d="M11 17h26M24 3l-5 14 5 28 5-28z" fill="none" style="stroke:var(--starlit)" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div><b>Pecahan Rasi Bintang</b><div class="m">${rs.n} (${rs.lat})</div></div></div><button class="b s" onclick="go('map')">Lihat di Galaksi</button><h3>Semua lencana</h3>`+stBdg()}
+ return hdr('Pencapaian')+sg([['bdg','Lencana'],['sky','Rasi Bintang']],ACT,'setAct')+body}
+function dreamView(){const dr=D.set.dream||{t:'N3 dalam 3 tahun',target:3000},hf=catCounts().h,p=Math.min(100,Math.round(hf/dr.target*100));
+ return hdr('Raih Mimpi')+`<div class="c dm"><svg viewBox="0 0 320 120" class="tor" aria-hidden="true"><path d="M0 100L70 54l50 36 60-50 70 60 70-40v64H0z" style="fill:rgba(10,14,60,.85)"/><g style="fill:#e0425a"><rect x="128" y="50" width="7" height="50"/><rect x="185" y="50" width="7" height="50"/><rect x="116" y="42" width="88" height="8" rx="3"/><rect x="124" y="58" width="72" height="5"/></g><circle cx="262" cy="24" r="3" fill="#fff"/><circle cx="48" cy="20" r="2" fill="#fff"/><circle cx="210" cy="14" r="1.6" fill="#fff"/></svg><div class="dt"><b style="font-size:22px">${E(dr.t)}</b><div class="pg" style="margin:14px 0 6px"><i style="width:${p}%"></i></div><div class="r2 m"><span>${fmtN(hf)} / ${fmtN(dr.target)} kata hafal</span><span>${p}%</span></div></div></div>
+<p class="quote" style="text-align:center">“Langkah kecil hari ini, akan jadi masa depan yang besar.”</p>
+<div class="c"><b>Ubah mimpimu</b><input id="dr-t" value="${E(dr.t)}" placeholder="Misal: N3 dalam 3 tahun" onchange="setDream()"><div class="m">Target jumlah kata hafal</div><input id="dr-n" type="number" min="10" value="${dr.target}" onchange="setDream()"></div>`}
+function setDream(){const t=$('#dr-t').value.trim()||'Mimpiku',n=Math.max(10,+$('#dr-n').value||3000);D.set.dream={t,target:n};save();toast('Mimpi disimpan');render(1)}
+function goalView(){const td=D.hist.filter(x=>x.at>=sod()).length,g=D.set.goal||30,p=Math.min(1,td/g),R=88,C=2*Math.PI*R;
+ return hdr('Target Harian')+`<div class="c" style="text-align:center"><div class="gr"><svg viewBox="0 0 200 200" width="210" height="210" aria-hidden="true"><circle cx="100" cy="100" r="${R}" class="rtk"/><circle cx="100" cy="100" r="${R}" class="rpg" stroke-dasharray="${(p*C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 100 100)"/></svg><div class="gt"><div class="n">${td}/${g}</div><div class="m">kartu</div></div></div><p style="margin:10px 0 0;font-weight:600">${td>=g?'Target hari ini tercapai!':'Sisa '+(g-td)+' kartu'}</p><p class="quote" style="text-align:center;margin:8px 0 0">“${quoteOf()}”</p></div>
+<h3>Atur target</h3><div class="chs">${[10,20,30,50,100,200].map(n=>`<button class="${g==n?'on':''}" onclick="setS('goal',${n})">${n}</button>`).join('')}</div>`}
+
+/* ---------- Game ---------- */
+function gameView(){const tl=[["startMatch()",'swap','Matching','Cocokkan kata & arti','#6f7dff'],["startType()",'keyboard','Typing','Ketik romaji','#2de1d3'],["startQuiz()",'help','Quiz','Cepat & tepat','#a78bfa'],["startMem()",'cards','Memory','Ingat kata','#fbbf24']];
+ return hdr('Game Mode')+`<div class="gg">${tl.map(t=>`<button class="gt2" onclick="${t[0]}" style="--tc:${t[4]}"><span class="ti2">${I(t[1],28)}</span><b>${t[2]}</b><small>${t[3]}</small></button>`).join('')}</div>${row('startT60()','bolt','Tantangan 60 Detik','Jawab sebanyak mungkin'+(D.set.best60?' · rekor '+D.set.best60:''),'#fb7185')}${row("go('listen')",'ear','Latihan Mendengar','Dengar lalu pilih arti','#60a5fa')}
+<div class="c hs">${I('trophy',22)}<span>Skor Tertinggi</span><b>${fmtN(D.set.hi||0)}</b></div>`}
+function startMem(){const pool=D.cards.filter(fb);if(pool.length<8){toast('Butuh minimal 8 kotoba.');return}
+ S=null;QZ=null;T=null;MT=null;TM=null;const t=[];sh(pool).slice(0,8).forEach(c=>{t.push({id:c.id,k:'j',x:c.jp||c.ro});t.push({id:c.id,k:'m',x:c.me})});
+ MG={t:sh(t),open:[],done:[],moves:0,t0:Date.now(),fin:0,bad:0};lockWL();render()}
+function memTap(i){const m=MG;if(!m||m.fin||m.bad||m.done.includes(i)||m.open.includes(i))return;m.open.push(i);render(1);
+ if(m.open.length==2){m.moves++;const a=m.t[m.open[0]],b=m.t[m.open[1]];
+  if(a.id==b.id&&a.k!=b.k){m.done.push(m.open[0],m.open[1]);m.open=[];render(1);
+   if(m.done.length==16)setTimeout(()=>{if(MG!==m)return;m.fin=1;relWL();const secs=Math.round((Date.now()-m.t0)/1000);logPrac('memori',m.moves,8,Math.max(50,1000-m.moves*25-secs*3));badgeCheck();render()},500)}
+  else{m.bad=1;setTimeout(()=>{if(MG!==m)return;m.open=[];m.bad=0;render(1)},750)}}}
+function memView(){const m=MG;
+ if(m.fin){const secs=Math.max(1,Math.round((Date.now()-m.t0)/1000));return`<h2>Selesai</h2><div class="c"><div class="n">${m.moves} <small>langkah · ${fmtMin(secs)}</small></div>${scoreLine()}</div><div class="act"><div class="g"><button class="b s" onclick="go('game')" style="margin:0">Game</button><button class="b" onclick="startMem()" style="margin:0">Main lagi</button></div></div>`}
+ return barTop(Math.round(m.done.length/16*100),'Langkah '+m.moves)+`<div class="tools"><span class="m" style="align-self:center">Memory · ingat kata</span><button class="ib" onclick="go('game')">Keluar</button></div><p class="m">Ketuk dua kotak: kata Jepang dan artinya harus cocok.</p><div class="mg">${m.t.map((x,i)=>{const sh2=m.open.includes(i)||m.done.includes(i);return`<button class="mc${m.done.includes(i)?' ok':''}${m.bad&&m.open.includes(i)?' no':''}${x.k=='j'?' jj':''}" onclick="memTap(${i})">${sh2?E(x.x):I('star',20)}</button>`}).join('')}</div>`}
+
+/* ---------- Latihan mendengar ---------- */
+function listenView(){return hdr('Latihan Mendengar')+`<p class="m" style="margin:-4px 2px 8px">Dengarkan suara kata Jepang, lalu pilih artinya. Jadwal review tidak berubah.</p>${[['Level 1 (Mudah)','10 pertanyaan · dari kata yang sudah kuat',10,'mudah','#2de1d3'],['Level 2 (Sedang)','15 pertanyaan · semua kata',15,'sedang','#fbbf24'],['Level 3 (Sulit)','20 pertanyaan · kata yang masih lemah',20,'sulit','#fb7185']].map(x=>row(`startQuiz('ear',${x[2]},'${x[3]}')`,'ear',x[0],x[1],x[4])).join('')}`}
+
+/* ---------- AI Asisten (offline: menyiapkan pertanyaan) ---------- */
+function aiWords(n){return D.cards.filter(c=>c.lp>0||(learned(c)&&sc(c)<70)).sort((a,b)=>b.lp-a.lp).slice(0,n||5)}
+const AIP={
+ arti:()=>{const c=aiWords(1)[0]||D.cards[0];return c?`Apa arti dan cara baca kata bahasa Jepang "${c.jp||c.ro}"${c.jp&&c.ro?' ('+c.ro+')':''}? Jelaskan dengan bahasa Indonesia yang sederhana untuk pemula.`:'Jelaskan 5 kata dasar bahasa Jepang untuk pemula.'},
+ kalimat:()=>{const L=aiWords(5);return L.length?`Buatkan 1 contoh kalimat sederhana untuk tiap kata ini, lengkap dengan tulisan Jepang, romaji, dan arti Indonesia: ${L.map(c=>(c.jp||c.ro)+' ('+c.me+')').join(', ')}.`:'Buatkan 5 contoh kalimat sederhana bahasa Jepang N5 dengan romaji dan arti Indonesia.'},
+ desumasu:()=>'Jelaskan perbedaan です dan ます dalam bahasa Jepang dengan bahasa Indonesia yang sederhana, beri 3 contoh kalimat beserta romaji dan artinya.',
+ wa_ga:()=>'Jelaskan perbedaan partikel は dan が dalam bahasa Jepang untuk pemula, beri contoh kalimat dengan romaji dan arti Indonesia.',
+ cerita:()=>{const L=aiWords(6);return L.length?`Buatkan cerita pendek (4 kalimat) dalam bahasa Jepang sederhana, lengkap dengan romaji dan terjemahan Indonesia, yang memakai kata-kata ini: ${L.map(c=>(c.jp||c.ro)+' ('+c.me+')').join(', ')}.`:'Buatkan cerita pendek 4 kalimat bahasa Jepang N5 dengan romaji dan terjemahan Indonesia.'}};
+function aiSend(k){const q=k?AIP[k]():AIQ.trim();if(!q){toast('Tulis pertanyaanmu dulu.');return}
+ const full=k?q:`Aku sedang belajar bahasa Jepang (pemula). ${q} Tolong jawab dengan bahasa Indonesia yang sederhana.`;
+ AIM.push({u:k?({arti:'Apa arti kata yang sering kulupa?',kalimat:'Buat contoh kalimat',desumasu:'Jelaskan perbedaan です & ます',wa_ga:'Jelaskan partikel は dan が',cerita:'Buat cerita dari kata sulitku'})[k]:q});
+ AIM.push({a:'Pertanyaan sudah disalin. Buka Claude atau ChatGPT, lalu tempel (tekan lama, Tempel).'});AIQ='';copyTxt(full,'Pertanyaan disalin');render(1);setTimeout(()=>{const e=$('#aichat');if(e)e.scrollTop=e.scrollHeight},50)}
+function aiView(){return hdr('AI Asisten')+`<div class="chat" id="aichat"><div class="bub a"><span class="bi">${I('ai',20)}</span><div>Halo ${E(D.set.name||'Pelajar')}! Aku bisa menyiapkan pertanyaan untuk Claude atau ChatGPT: arti kata, contoh kalimat, dan penjelasan tata bahasa. Mau tanya apa hari ini?<div class="m" style="margin-top:6px">Aplikasi ini bekerja tanpa internet, jadi pertanyaannya disalin dan kamu tempel sendiri ke aplikasi AI.</div></div></div>${AIM.map(x=>x.u?`<div class="bub u">${E(x.u)}</div>`:`<div class="bub a"><span class="bi">${I('ai',20)}</span><div>${E(x.a)}</div></div>`).join('')}</div>
+<div class="sugs">${[['arti','Apa arti kata yang sering kulupa?'],['kalimat','Buat contoh kalimat'],['desumasu','Jelaskan perbedaan です & ます'],['wa_ga','Jelaskan partikel は dan が'],['cerita','Buat cerita dari kata sulitku']].map(x=>`<button onclick="aiSend('${x[0]}')">${x[1]}</button>`).join('')}</div>
+<div class="sr ai"><input id="aiq" placeholder="Tulis pertanyaan..." value="${E(AIQ)}" oninput="AIQ=this.value" onkeydown="if(event.key=='Enter')aiSend()"><button class="send" onclick="aiSend()" aria-label="Kirim">${I('send',20)}</button></div>`}
+
+/* ---------- Lainnya ---------- */
+function moreView(){return hdr('Lainnya')+row("go('words')",'list','Daftar Kata',D.cards.length+' kotoba','#6f7dff')+row("go('add')",'plus','Tambah Kata','Tulis satu kata baru','#2de1d3')+row("go('imp')",'imp','Impor Kotoba','Tempel atau buka file teks','#818cf8')+row("go('batch')",'layers','Bab',D.batches.length+' bab','#a78bfa')+row("go('gram')",'gram','Bunyi & Pola Kalimat','Materi dan catatan tata bahasa','#fbbf24')+row("go('music')",'music','Musik Angkasa','3 lagu instrumental','#2de1d3')+row("go('listen')",'ear','Latihan Mendengar','Dengar lalu pilih arti','#60a5fa')}
+
+/* ---------- Daftar Kata ---------- */
+const _flt=flt;flt=function(){if(F.f=='haf'){F.f='all';const L=_flt().filter(c=>c.rc&&sc(c)>=HAFAL);F.f='haf';return L}return _flt()};
+function cardRow(c){const s=sc(c),st=!learned(c)?'baru':s>=HAFAL?'hafal':s<40?'lupa':'belajar',ico={baru:'star',hafal:'check',lupa:'star',belajar:'refresh'}[st],lbl={baru:'Baru',hafal:'Hafal',lupa:'Lupa',belajar:'Belajar'}[st];
+ return`<div class="wr" onclick="CD=${c.id};render()"><span class="wi ${st}">${I(ico,18)}</span><div class="wt"><b class="wj">${E(c.jp||c.ro)}</b><span class="m">${c.jp&&c.ro?E(c.ro):''}</span><span class="m">${E(c.me)}</span></div><span class="wtag ${st}">${lbl}</span></div>`}
+function wordsView(){return hdr('Daftar Kata')+sg([['all','Semua'],['haf','Hafal'],['weak','Lupa'],['new','Baru']],F.f,"setFT")+`<div class="sr">${I('search',18)}<input id="f-q" placeholder="Cari kata / arti / level..." value="${E(F.q)}" oninput="setF('q',this.value)"></div><select id="f-b" onchange="setF('b',this.value)"><option value="">Semua bab</option>${D.batches.map(b=>`<option value="${b.id}"${F.b==b.id?' selected':''}>Bab ${b.day} ${E(b.name)}</option>`).join('')}</select><p class="m" id="cnt"></p><div id="lst"></div>`}
+function setFT(k){setF('f',k)}
+
+/* ---------- Tambah Kata ---------- */
+function addView(){return hdr('Tambah Kata')+sg([['manual','Manual'],['imp','Tempel banyak']],'manual',"addTab")+`<div class="c"><label class="m">Jepang</label><input id="ak-jp" placeholder="例: こんにちは"><label class="m">Romaji</label><input id="ak-ro" placeholder="contoh: konnichiwa" autocapitalize="none"><label class="m">Arti</label><input id="ak-me" placeholder="contoh: selamat siang"><label class="m">Level</label><select id="ak-lv"><option value="">Tanpa level</option>${['N5','N4','N3','N2','N1'].map(l=>`<option>${l}</option>`).join('')}</select><label class="m">Masuk ke bab</label><select id="ak-b" onchange="$('#ak-bn').hidden=this.value!=='new'">${D.batches.map(b=>`<option value="${b.id}">Bab ${b.day} ${E(b.name)}</option>`).join('')}<option value="new"${D.batches.length?'':' selected'}>+ Bab baru</option></select><input id="ak-bn" placeholder="Nama bab baru" ${D.batches.length?'hidden':''}><button class="b" onclick="addCard()">Simpan</button></div>`}
+function addTab(k){if(k=='imp')go('imp')}
+function addCard(){const jp=$('#ak-jp').value.trim(),ro=$('#ak-ro').value.trim(),me=$('#ak-me').value.trim(),lv=$('#ak-lv').value;
+ if(!me||(!jp&&!ro)){toast('Isi arti, dan minimal tulisan Jepang atau romaji.');return}
+ const k=((jp||'')+'|'+(ro||'')).toLowerCase();if(D.cards.some(c=>key(c)==k)){toast('Kata ini sudah ada.');return}
+ let bid=$('#ak-b').value;if(bid=='new'||!D.batches.length){const nm=($('#ak-bn').value||'').trim()||'Kata tambahan',b={id:D.bid++,day:D.batches.length+1,name:nm,at:Date.now()};D.batches.push(b);bid=b.id}
+ D.cards.push({id:D.nid++,jp,ro,me,lv,tags:'',b:+bid,created:Date.now(),first:null,last:null,next:null,score:null,iv:0,ease:2.5,rc:0,ok:0,wr:0,hd:0,ez:0,lp:0});save();toast('Kata disimpan');
+ ['#ak-jp','#ak-ro','#ak-me'].forEach(s=>$(s).value='');$('#ak-jp').focus()}
+
+/* ---------- Impor ---------- */
+function impTab(k){IMT=k;['file','paste'].forEach(x=>{const p=$('#pn-'+x);if(p)p.hidden=x!=k});document.querySelectorAll('#imptabs button').forEach(b=>b.classList.toggle('on',b.dataset.k==k))}
+function loadFile(inp){const f=inp.files&&inp.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{$('#paste').value=String(r.result||'');impTab('paste');toast('File dibaca. Tekan Lihat preview.');doPreview()};r.onerror=()=>toast('File tidak bisa dibaca.');r.readAsText(f)}
+function impView(){return hdr('Impor Kotoba')+`<div class="sg" id="imptabs"><button data-k="file" class="${IMT=='file'?'on':''}" onclick="impTab('file')">File</button><button data-k="paste" class="${IMT=='paste'?'on':''}" onclick="impTab('paste')">Tempel</button></div>
+<div class="c" style="margin-top:12px"><input id="bname" placeholder="Nama bab, mis. Salam &amp; Ungkapan"><div class="m">Tambah ke level (opsional)</div><select id="imp-lv"><option value="">Sesuai isi daftar</option>${['N5','N4','N3','N2','N1'].map(l=>`<option>${l}</option>`).join('')}</select></div>
+<div id="pn-file" ${IMT=='file'?'':'hidden'}><label class="drop">${I('note',34)}<b>Pilih File</b><span class="m">TXT, CSV, TSV</span><span class="m">Satu kotoba per baris</span><input type="file" accept=".txt,.csv,.tsv,text/plain,text/csv" hidden onchange="loadFile(this)"></label></div>
+<div id="pn-paste" ${IMT=='paste'?'':'hidden'}><p class="m">Contoh: <code>ohayou = selamat pagi</code>, <code>おはよう | ohayou | selamat pagi | N5</code>, atau dipisah tab. Tempelan dari PDF juga bisa dibaca.</p><textarea id="paste" placeholder="Tempel di sini..."></textarea><button class="b" onclick="doPreview()">Lihat preview</button></div>
+<h3>Fitur tambahan</h3>${['Preview sebelum disimpan','Deteksi duplikat otomatis','Rapikan format daftar dari PDF otomatis','Tanpa batas jumlah kata'].map(t=>`<div class="c fe">${I('check',18)}<span>${t}</span></div>`).join('')}`}
+
+/* ---------- Bab ---------- */
+function batchView(){return hdr('Bab')+`<button class="b" onclick="go('imp')">+ Tempel kotoba baru</button>`+(D.batches.map(b=>{const s=batchStat(b);return`<div class="c"><b>Bab ${b.day} · ${E(b.name)}</b><div class="m">${s.n} kotoba · dibuat ${fd(b.at)}</div><div class="r"><span>Kuat / Sedang / Lemah</span><span>${s.k} / ${s.md} / ${s.l}</span></div><div class="r"><span>Total review · Akurasi</span><span>${s.rv} · ${s.a}</span></div><h3>Retensi</h3>${retHtml(b)}<button class="b s sm" onclick="F={q:'',f:'all',b:'${b.id}',n:50};go('words')">Lihat kata</button></div>`}).join('')||'<p class="m">Belum ada bab.</p>')}
+
+/* ---------- Bunyi & Pola Kalimat ---------- */
+const GR=[
+ ['は (topik)','Menandai topik pembicaraan. Dibaca "wa".',[['私は学生です。','Watashi wa gakusei desu.','Saya adalah pelajar.']]],
+ ['が (subjek)','Menandai subjek, sering untuk hal baru atau yang ditekankan.',[['猫がいます。','Neko ga imasu.','Ada kucing.']]],
+ ['です / ます','Bentuk sopan. です untuk "adalah", ます untuk kata kerja.',[['学生です。','Gakusei desu.','(Saya) pelajar.'],['食べます。','Tabemasu.','Makan.']]],
+ ['を (objek)','Menandai objek dari kata kerja. Dibaca "o".',[['水を飲みます。','Mizu o nomimasu.','Minum air.']]],
+ ['に (waktu / tujuan)','Menandai waktu tertentu atau tujuan gerak.',[['七時に起きます。','Shichiji ni okimasu.','Bangun jam tujuh.'],['学校に行きます。','Gakkou ni ikimasu.','Pergi ke sekolah.']]],
+ ['で (tempat aksi / alat)','Menandai tempat suatu kegiatan dilakukan, atau alat yang dipakai.',[['図書館で勉強します。','Toshokan de benkyou shimasu.','Belajar di perpustakaan.']]],
+ ['の (milik)','Menyambung dua kata: milik atau hubungan.',[['私の本です。','Watashi no hon desu.','Ini buku saya.']]],
+ ['も (juga)','Menggantikan は, が, atau を untuk arti "juga".',[['私も行きます。','Watashi mo ikimasu.','Saya juga pergi.']]],
+ ['Kata sifat -i','Berakhiran い. Negatif: ganti い dengan くない.',[['高いです。','Takai desu.','Mahal / tinggi.'],['高くないです。','Takakunai desu.','Tidak mahal.']]],
+ ['Kata sifat -na','Memakai な sebelum kata benda.',[['静かな町です。','Shizuka na machi desu.','Kota yang tenang.']]],
+ ['〜ました (lampau)','Bentuk lampau sopan: ます jadi ました.',[['昨日、映画を見ました。','Kinou, eiga o mimashita.','Kemarin menonton film.']]],
+ ['〜ませんか (ajakan)','Mengajak dengan sopan: "maukah ...?".',[['一緒に食べませんか。','Issho ni tabemasen ka.','Maukah makan bersama?']]]];
+let GT='materi';
+function setGT(k){GT=k;render(1)}
+function togGram(i){D.set.gram=D.set.gram||{};D.set.gram[i]=!D.set.gram[i];save();render(1)}
+function gramView(){const g=D.set.gram||{},n=GR.filter((x,i)=>g[i]).length;let b;
+ if(GT=='catatan')b=`<div class="c"><textarea id="gnote" style="min-height:260px" placeholder="Tulis catatan tata bahasamu di sini..." oninput="D.set.notes=this.value;save()">${E(D.set.notes||'')}</textarea><p class="m" style="margin:4px 0 0">Tersimpan otomatis.</p></div>`;
+ else b=`<p class="m" style="margin:0 2px 8px">${n} dari ${GR.length} sudah kamu pahami. Ketuk judul untuk melihat contoh, ketuk lingkaran jika sudah paham.</p>`+GR.map((x,i)=>`<details class="gd" ${OP.has('g'+i)?'open':''} ontoggle="togOp('g${i}',this.open)"><summary><span class="gn">${i+1}</span><b>${x[0]}</b><button class="ck2${g[i]?' on':''}" onclick="event.preventDefault();event.stopPropagation();togGram(${i})" aria-label="Tandai paham">${I('check',16)}</button></summary><div class="gb"><p>${x[1]}</p>${x[2].map(e=>`<div class="ex"><div class="jpx">${e[0]}</div><div class="m">${e[1]}</div><div>${e[2]}</div></div>`).join('')}</div></details>`).join('');
+ return hdr('Bunyi & Pola Kalimat')+sg([['materi','Materi'],['catatan','Catatan']],GT,'setGT')+b}
+
+/* ---------- Pengaturan ---------- */
+function setView(){const s=D.set,bd=s.lastBackup?Math.floor((Date.now()-s.lastBackup)/DAY):null,dt=(id,ico,t,sub,body)=>`<details class="row2" ${OP.has(id)?'open':''} ontoggle="togOp('${id}',this.open)"><summary><span class="ri">${I(ico,22)}</span><span class="rt2"><b>${t}</b><small>${sub}</small></span>${I('chevron',18)}</summary><div class="gb">${body}</div></details>`,
+ sel=(k,opts)=>`<select onchange="setS('${k}',this.value)">${opts.map(o=>`<option value="${o[0]}"${String(s[k])==String(o[0])?' selected':''}>${o[1]}</option>`).join('')}</select>`;
+ return hdr('Pengaturan')+`<div class="c pc"><div class="av">${I('user',26)}</div><div class="pi"><div class="m">Nama panggilan</div><input value="${E(s.name||'')}" placeholder="Pelajar" onchange="setS('name',this.value)"></div></div>`+
+ dt('t','palette','Tema','Pilih latar belakang',themePick()+`<label class="ck"><input type="checkbox" ${s.calm?'checked':''} onchange="setS('calm',this.checked)"> Kurangi animasi (hemat baterai)</label>`)+
+ dt('b','book','Belajar','Batas kata baru, arah kartu',`<div class="m">Batas kotoba baru per hari</div>${sel('target',[[0,'Tanpa batas'],[10,10],[20,20],[30,30],[50,50],[100,100],[200,200]])}<div class="m">Arah kartu</div>${sel('dir',[['jp','Jepang ke Indonesia'],['id','Indonesia ke Jepang'],['rand','Acak']])}<label class="ck"><input type="checkbox" ${s.hideRo?'checked':''} onchange="setS('hideRo',this.checked)"> Sembunyikan romaji sampai jawaban dibuka</label>`)+
+ dt('k','save','Cadangan Data',bd==null?'Belum pernah backup':'Backup terakhir '+bd+' hari lalu',`<p class="m">Backup berupa teks. Salin, lalu simpan di Catatan atau WhatsApp ke diri sendiri. Untuk memulihkan, tempel lagi di sini.</p><button class="b sm" onclick="mkBackup()">Buat backup</button><button class="b s sm" onclick="cpBackup()">Salin</button><textarea id="bk" placeholder="Teks backup muncul atau ditempel di sini"></textarea><button class="b s" onclick="restore1()">Pulihkan dari teks ini</button><div id="rs"></div>`)+
+ dt('h','help','Bantuan & FAQ','Cara pakai singkat',`<p><b>Cara belajar:</b> Belajar → Kotoba baru. Tekan Tampilkan jawaban, lalu pilih Ulang, Sulit, Baik, atau Mudah. Aplikasi mengatur kapan kata muncul lagi.</p><p><b>Hafal itu apa?</b> Kata dengan Memory Score 90 ke atas.</p><p><b>Bintang menyala:</b> 1 bintang tiap 20 kata yang sudah dipelajari, jadi emas tiap 20 kata yang kuat (skor 70+).</p><p><b>Data aman?</b> Data hanya ada di HP ini. Buat backup berkala, terutama sebelum memasang APK baru.</p><p><b>Hari libur beruntun:</b> bolos satu hari per minggu tidak memutus rangkaian.</p>`)+
+ dt('a','info','Tentang Aplikasi','Kotoba Memory · Galaxy Edition',`<p>Aplikasi hafalan kotoba bahasa Jepang yang bekerja tanpa internet. Semua data tersimpan di HP kamu.</p><p class="m">ことば メモリー · Galaxy Edition</p>`)}
+
+/* ---------- router & render ---------- */
+const VIEWS={splash:splashView,home:homeView,study:studyMenu,review:reviewView,stats:stats,map:mapView,prof:profView,ach:achView,dream:dreamView,goal:goalView,set:setView,game:gameView,ai:aiView,more:moreView,words:wordsView,add:addView,imp:impView,batch:batchView,listen:listenView,gram:gramView,music:musicView};
+function R(){if(S)return study();if(T)return typeView();if(MT)return matchView();if(TM)return t60View();if(MG)return memView();if(QZ)return quizView();if(CD)return detail();if(IM)return preview();return(VIEWS[V]||homeView)()}
+function go(v){V=v;S=null;CD=null;CF=null;QZ=null;T=null;MT=null;TM=null;MG=null;IM=null;clearInterval(TMH);relWL();render()}
+const NV4=[['home','Beranda','home'],['stats','Statistik','chart'],['map','Peta Galaksi','galaxy'],['prof','Profil','user']];
+const TABOF={music:'home',home:'home',study:'home',review:'home',game:'home',ai:'home',more:'home',words:'home',add:'home',imp:'home',batch:'home',listen:'home',gram:'home',goal:'home',stats:'stats',map:'map',prof:'prof',ach:'prof',dream:'prof',set:'prof'};
+function render(keep){const full=!!(S||QZ||T||MT||TM||MG)||V=='splash',nv=$('#nav');$('#app').innerHTML=R();nv.hidden=full;document.body.classList.toggle('full',full);
+ [...document.body.classList].filter(c=>c.startsWith('v-')).forEach(c=>document.body.classList.remove(c));document.body.classList.add('v-'+V);
+ nv.innerHTML=NV4.map(n=>`<button class="${!full&&TABOF[V]==n[0]?'on':''}" onclick="go('${n[0]}')">${I(n[2],22)}<span>${n[1]}</span></button>`).join('');
+ if(V=='words'&&!full&&!CD&&!IM)renderList();paintSky();const ti=$('#ti');if(ti&&T&&!T.chk)ti.focus();
+ if(QZ&&!QZ.done&&QZ.q[QZ.i]&&QZ.q[QZ.i].dir=='ear'&&QZ.said!==QZ.i){QZ.said=QZ.i;sp(QZ.q[QZ.i].c.id)}
+ miniBar();$('#app').classList.toggle('ani',!keep);if(!keep)window.scrollTo(0,0)}
+if(D.set.splashDay!==sod())V='splash';
+
+/* ================= v7: musik angkasa (dibuat langsung oleh aplikasi, tanpa file, tanpa internet) ================= */
+IC.music='<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>';
+IC.play='<path d="M7 4l13 8-13 8z"/>';IC.pause='<path d="M7 4h4v16H7zM13 4h4v16h-4z"/>';IC.next='<path d="M5 4l10 8-10 8zM19 5v14"/>';IC.prev='<path d="M19 4L9 12l10 8zM5 5v14"/>';IC.vol='<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 010 6"/>';
+const mf=m=>440*Math.pow(2,(m-69)/12);
+const TRACKS=[
+ {id:'nebula',n:'Nebula Drift',d:'Pad lembut dan tenang, cocok untuk fokus',bpm:56,bars:[[45,52,57,60,64],[41,48,53,57,64],[48,55,60,64,67],[43,50,55,59,62]],sp:[69,72,76,79,81,84],pad:'triangle',cut:900,spark:.32,mode:'spark'},
+ {id:'orbit',n:'Orbit Tenang',d:'Arpeggio pelan, seperti berputar mengelilingi bintang',bpm:70,bars:[[50,57,60,64,67],[46,53,57,60,65],[43,50,58,62,65],[45,52,57,61,64]],sp:[],pad:'sine',cut:700,spark:0,mode:'arp'},
+ {id:'aurora',n:'Fajar Aurora',d:'Hangat dan terang, seperti cahaya aurora',bpm:62,bars:[[50,57,62,66,69],[45,52,57,61,64],[47,54,59,62,66],[43,50,55,59,62]],sp:[74,76,78,81,83,86],pad:'triangle',cut:1300,spark:.18,mode:'mel'}];
+const MUS={ctx:null,m:null,rv:null,t:0,on:false,h:null,nx:0,st:0,vol:.5};
+function musInit(){if(MUS.ctx)return true;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)throw 0;const c=new C();MUS.ctx=c;
+ MUS.m=c.createGain();MUS.m.gain.value=0;const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2400;MUS.m.connect(lp);lp.connect(c.destination);
+ const dl=c.createDelay(1.0);dl.delayTime.value=.46;const fb=c.createGain();fb.gain.value=.38,dlp=c.createBiquadFilter();dlp.type='lowpass';dlp.frequency.value=1500;dl.connect(dlp);dlp.connect(fb);fb.connect(dl);dlp.connect(MUS.m);MUS.dl=dl;return true}catch(e){MUS.ctx=null;toast('Musik tidak didukung di perangkat ini.');return false}}
+function mv(f,t,dur,o){const c=MUS.ctx,osc=c.createOscillator(),g=c.createGain();osc.type=o.type;osc.frequency.value=f;if(o.det)osc.detune.value=o.det;osc.connect(g);
+ g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(o.v,t+o.a);g.gain.setValueAtTime(o.v,t+Math.max(o.a,dur-o.r));g.gain.linearRampToValueAtTime(0,t+dur);
+ g.connect(MUS.m);if(o.dl){const s=c.createGain();s.gain.value=o.dl;g.connect(s);s.connect(MUS.dl)}osc.start(t);osc.stop(t+dur+.05)}
+function bell(f,t,v){mv(f,t,1.8,{type:'sine',v:v,a:.01,r:1.7,dl:.7})}
+function musTick(){if(!MUS.on)return;const c=MUS.ctx,tr=TRACKS[MUS.t],beat=60/tr.bpm,step=beat/2;
+ while(MUS.nx<c.currentTime+2){const t=MUS.nx,s=MUS.st,bar=Math.floor(s/8),ch=tr.bars[bar%4],pos=s%8;
+  if(pos==0){const dur=step*8;[1,2,3].forEach((k,i)=>mv(mf(ch[k]),t,dur+1.4,{type:tr.pad,v:.055,a:1.8,r:2.4,det:i==1?6:i==2?-6:0}));
+   mv(mf(ch[0]-12),t,dur,{type:'sine',v:.15,a:.4,r:1.6})}
+  if(tr.mode=='spark'&&Math.random()<tr.spark){const n=tr.sp[Math.floor(Math.random()*tr.sp.length)];bell(mf(n-12),t,.05+Math.random()*.03)}
+  if(tr.mode=='arp'&&pos%2==0){const seq=[0,2,1,3,2,4,3,1][pos],n=ch[seq]+12;mv(mf(n),t,step*3,{type:'triangle',v:.06,a:.02,r:step*2.4,dl:.4})}
+  if(tr.mode=='mel'){const mel=[[0,4],[4,5],[6,3]];const m=mel.find(x=>x[0]==pos);if(m&&Math.random()<.8){const n=tr.sp[(m[1]+bar)%tr.sp.length];bell(mf(n-12),t,.06)}}
+  MUS.nx+=step;MUS.st++}}
+function musPlay(i){if(!musInit())return;const c=MUS.ctx;if(i!=null)MUS.t=i;
+ const go2=()=>{clearInterval(MUS.h);MUS.on=true;MUS.nx=c.currentTime+.1;MUS.st=0;MUS.m.gain.cancelScheduledValues(c.currentTime);MUS.m.gain.setValueAtTime(MUS.m.gain.value,c.currentTime);MUS.m.gain.linearRampToValueAtTime(MUS.vol*.9,c.currentTime+2);MUS.h=setInterval(musTick,500);musTick();document.documentElement.classList.add('lite');D.set.mt=MUS.t;save();render(1)};
+ if(c.state=='suspended')c.resume().then(go2).catch(go2);else go2()}
+function musStop(){const c=MUS.ctx;if(!c)return;MUS.on=false;document.documentElement.classList.remove('lite');clearInterval(MUS.h);MUS.m.gain.cancelScheduledValues(c.currentTime);MUS.m.gain.setValueAtTime(MUS.m.gain.value,c.currentTime);MUS.m.gain.linearRampToValueAtTime(0,c.currentTime+.8);setTimeout(()=>{if(!MUS.on)try{c.suspend()}catch(e){}},1000);render(1)}
+function musToggle(){if(MUS.on)musStop();else musPlay(D.set.mt||0)}
+function musPick(i){if(MUS.on&&MUS.t==i){musStop();return}if(MUS.on){MUS.on=false;clearInterval(MUS.h);const c=MUS.ctx;MUS.m.gain.cancelScheduledValues(c.currentTime);MUS.m.gain.setValueAtTime(MUS.m.gain.value,c.currentTime);MUS.m.gain.linearRampToValueAtTime(0,c.currentTime+.4);setTimeout(()=>musPlay(i),450)}else musPlay(i)}
+function musStep(d){const i=((MUS.on?MUS.t:(D.set.mt||0))+d+TRACKS.length)%TRACKS.length;musPick2(i)}
+function musPick2(i){if(MUS.on){MUS.on=false;clearInterval(MUS.h);const c=MUS.ctx;MUS.m.gain.cancelScheduledValues(c.currentTime);MUS.m.gain.setValueAtTime(MUS.m.gain.value,c.currentTime);MUS.m.gain.linearRampToValueAtTime(0,c.currentTime+.4);setTimeout(()=>musPlay(i),450)}else{MUS.t=i;D.set.mt=i;save();render(1)}}
+function musVol(v){MUS.vol=v/100;D.set.mv=+v;if(MUS.ctx&&MUS.on)MUS.m.gain.setTargetAtTime(MUS.vol*.9,MUS.ctx.currentTime,.1)}
+function musAuto(){if(D.set.mauto&&!MUS.on)musPlay(D.set.mt||0)}
+const _lw=lockWL;lockWL=function(){_lw();musAuto()};
+MUS.vol=(D.set.mv!=null?D.set.mv:50)/100;MUS.t=D.set.mt||0;
+function musicView(){const t=TRACKS[MUS.on?MUS.t:(D.set.mt||0)],on=MUS.on;
+ return hdr('Musik Angkasa')+`<div class="c mus ${on?'pl':''}"><div class="orb"><svg viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="pl1" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#bfc8ff"/><stop offset=".55" stop-color="#5b6cff"/><stop offset="1" stop-color="#1b1f7a"/></radialGradient></defs><ellipse cx="100" cy="100" rx="88" ry="30" fill="none" stroke="rgba(170,180,255,.45)" stroke-width="2" transform="rotate(-18 100 100)"/><circle cx="100" cy="100" r="42" fill="url(#pl1)"/><ellipse cx="100" cy="100" rx="88" ry="30" fill="none" stroke="rgba(200,210,255,.8)" stroke-width="2.4" stroke-dasharray="140 400" stroke-dashoffset="-190" transform="rotate(-18 100 100)"/><g class="sat"><circle cx="100" cy="14" r="5" fill="#fff"/></g></svg></div>
+<div class="eq">${[0,1,2,3,4].map(i=>`<i style="animation-delay:${i*.15}s"></i>`).join('')}</div><b style="font-size:22px">${t.n}</b><div class="m" style="margin:4px 0 14px">${t.d}</div>
+<div class="mctl"><button class="mb2" onclick="musStep(-1)" aria-label="Sebelumnya">${I('prev',22)}</button><button class="mb2 big" onclick="musToggle()" aria-label="${on?'Jeda':'Putar'}">${I(on?'pause':'play',30)}</button><button class="mb2" onclick="musStep(1)" aria-label="Berikutnya">${I('next',22)}</button></div>
+<div class="vr">${I('vol',18)}<input type="range" min="0" max="100" value="${Math.round(MUS.vol*100)}" oninput="musVol(this.value)" aria-label="Volume"></div></div>
+<h3>Pilih lagu</h3>${TRACKS.map((x,i)=>`<button class="row" onclick="musPick(${i})"><span class="ri" style="--tc:${['#6f7dff','#2de1d3','#a78bfa'][i]}">${I(on&&MUS.t==i?'pause':'play',20)}</span><span class="rt2"><b>${x.n}</b><small>${x.d}</small></span><span class="m">${i+1}/3</span></button>`).join('')}
+<label class="ck"><input type="checkbox" ${D.set.mauto?'checked':''} onchange="D.set.mauto=this.checked;save()"> Putar musik otomatis saat mulai belajar</label><p class="m">Ketiga lagu dibuat langsung oleh aplikasi (instrumental ambient bertema angkasa), jadi tetap jalan tanpa internet.</p>`}
+function miniBar(){const m=$('#mini');if(!m)return;const show=MUS.on&&!(S||QZ||T||MT||TM||MG)&&V!='splash'&&V!='music';m.hidden=!show;document.body.classList.toggle('mp',show);
+ if(show){const t=TRACKS[MUS.t];m.innerHTML=`<span class="eq sm">${[0,1,2].map(i=>`<i style="animation-delay:${i*.15}s"></i>`).join('')}</span><button class="mt3" onclick="go('music')"><b>${t.n}</b><small>Musik Angkasa</small></button><button class="mb2" onclick="musToggle()" aria-label="Jeda">${I('pause',18)}</button>`}}
+
+buildSky();applyTheme();render();
+
 </script></body></html>
