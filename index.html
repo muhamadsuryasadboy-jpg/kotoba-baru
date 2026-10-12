@@ -461,7 +461,14 @@ body.mp #app{padding-bottom:178px}
 html.lite nav,html.lite #mini,html.lite .act,html.lite .tabs button,html.lite .tile,html.lite .bk,html.lite .hint{-webkit-backdrop-filter:none;backdrop-filter:none}
 html.lite #sky .st{animation:none}
 html.lite .mbtn.on{animation:none}
-</style></head><body><div id="sky"><i class="st s1"></i><i class="st s2"></i><i class="st s3"></i><div id="fx"></div><div id="aur"></div><div id="mw"></div><div id="skycon"></div><div id="planet"><svg viewBox="0 0 80 60" width="100%" height="100%"><defs><radialGradient id="pg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#f6dca0"/><stop offset=".6" stop-color="#c98a4b"/><stop offset="1" stop-color="#6b3f2a"/></radialGradient><clipPath id="pf"><rect x="0" y="30" width="80" height="30"/></clipPath></defs><ellipse cx="40" cy="30" rx="38" ry="9" fill="none" stroke="rgba(240,215,160,.55)" stroke-width="3" transform="rotate(-18 40 30)"/><circle cx="40" cy="30" r="17" fill="url(#pg)"/><ellipse cx="40" cy="30" rx="38" ry="9" fill="none" stroke="rgba(240,215,160,.8)" stroke-width="3" transform="rotate(-18 40 30)" clip-path="url(#pf)"/></svg></div><div id="skymoon"></div></div><div id="app"></div><div id="t"></div><nav id="nav"></nav>
+html.lite *,html.lite *::before,html.lite *::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.lite #mw,html.lite #aur,html.lite #fx{display:none!important}
+html.lite #sky .con,html.lite #skymoon,html.lite .orb,html.lite .fm,html.lite .cry,html.lite .rpg{filter:none!important}
+html.lite .c,html.lite .tile,html.lite .row,html.lite .row2>summary,html.lite .gt2,html.lite .wr,html.lite .gd,html.lite .op,html.lite nav{box-shadow:none!important}
+html.lite .rpg,html.lite .pg i{transition:none}
+.bub{max-width:96%}.bub.u{max-width:88%}.bub .ans{flex:1;min-width:0;word-break:break-word}.bub .ans p{margin:6px 0}
+.lk2{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.bub a.b{text-decoration:none;text-align:center}
+</style></head><body><div id="sky"><i class="st s1"></i><i class="st s2"></i><i class="st s3"></i><div id="fx"></div><div id="aur"></div><div id="mw"></div><div id="skycon"></div><div id="planet"><svg viewBox="0 0 80 60" width="100%" height="100%"><defs><radialGradient id="pg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#f6dca0"/><stop offset=".6" stop-color="#c98a4b"/><stop offset="1" stop-color="#6b3f2a"/></radialGradient><clipPath id="pf"><rect x="0" y="30" width="80" height="30"/></clipPath></defs><ellipse cx="40" cy="30" rx="38" ry="9" fill="none" stroke="rgba(240,215,160,.55)" stroke-width="3" transform="rotate(-18 40 30)"/><circle cx="40" cy="30" r="17" fill="url(#pg)"/><ellipse cx="40" cy="30" rx="38" ry="9" fill="none" stroke="rgba(240,215,160,.8)" stroke-width="3" transform="rotate(-18 40 30)" clip-path="url(#pf)"/></svg></div><div id="skymoon"></div></div><div id="app"></div><div id="t"></div><div id="mini" hidden></div><nav id="nav"></nav>
 <script>
 const $=s=>document.querySelector(s),DAY=864e5;
 const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -721,10 +728,24 @@ function undo(){const u=UN.pop();if(!u||!S)return;const c=cardById(u.id);
  for(let k=D.hist.length-1;k>=0;k--){if(D.hist[k].c==u.id){D.hist.splice(k,1);break}}
  S.i=u.i;S.q=u.q;S.res=u.res;S.show=0;save();toast('Jawaban terakhir dibatalkan');render()}
 function dirOf(c){let d=D.set.dir||'jp';if(d=='rand'){if(!S.dm[c.id])S.dm[c.id]=Math.random()<.5?'jp':'id';d=S.dm[c.id]}return d}
-function sp(id){const c=cardById(id);if(!c)return;
- try{if(!('speechSynthesis' in window))throw 0;const vs=speechSynthesis.getVoices(),ja=vs.filter(v=>/^ja/i.test(v.lang));if(vs.length&&!ja.length)throw 1;
-  const u=new SpeechSynthesisUtterance(c.jp||c.ro);u.lang='ja-JP';u.rate=.85;if(ja[0])u.voice=ja[0];speechSynthesis.cancel();speechSynthesis.speak(u)}
- catch(e){toast('Suara Jepang belum tersedia di perangkat ini. Pasang data suara Jepang di pengaturan Text-to-speech Android.')}}
+/* ---------- Suara: perangkat dulu, lalu online, lalu pesan jelas ---------- */
+const SPK={a:null,t:0};
+try{if('speechSynthesis' in window){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}}catch(e){}
+function noSound(){if(Date.now()-SPK.t<5000)return;SPK.t=Date.now();toast('Suara tidak bisa diputar. Pasang suara Jepang di pengaturan Text-to-speech HP, atau sambungkan internet. Pakai tombol Tampilkan tulisan dulu.')}
+function spOnline(txt,jp){try{if(SPK.a){try{SPK.a.pause()}catch(e){}}
+ const a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl='+(jp?'ja':'id')+'&q='+encodeURIComponent(txt));SPK.a=a;a.onerror=noSound;
+ const p=a.play();if(p&&p.catch)p.catch(noSound)}catch(e){noSound()}}
+function speak(txt,jp){if(!txt)return;let started=false,used=false;
+ const fall=()=>{if(used)return;used=true;spOnline(txt,jp)};
+ try{if(!jp||!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance=='undefined')return fall();
+  const vs=speechSynthesis.getVoices(),ja=vs.filter(v=>/^ja/i.test(v.lang));if(vs.length&&!ja.length)return fall();
+  const u=new SpeechSynthesisUtterance(txt);u.lang='ja-JP';u.rate=.85;if(ja[0])u.voice=ja[0];
+  u.onstart=()=>{started=true};u.onerror=()=>fall();
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+  setTimeout(()=>{if(!started&&!speechSynthesis.speaking)fall()},1800)}catch(e){fall()}}
+function sp(id){const c=cardById(id);if(!c)return;speak(c.jp||c.ro,!!c.jp)}
+function spTest(){toast('Memutar こんにちは...');speak('こんにちは',true)}
+
 function study(){if(S.i>=S.q.length)return summary();
  const c=cardById(S.q[S.i]);if(!c){S.i++;return study()}
  const d=dirOf(c),jt=c.jp||c.ro,both=c.jp&&c.ro,pct=Math.round(S.i/S.q.length*100);
@@ -751,7 +772,7 @@ function quizView(){const z=QZ;
  if(z.done){const a=pctOf(z.ok,z.q.length);return`<h2>Hasil ${z.kind=='ear'?'kuis dengar':'kuis'}</h2><div class="c"><div class="n">${z.ok} <small>/ ${z.q.length} benar · ${a}%</small></div>${scoreLine()}</div>`+(z.wrong.length?`<h3>Perlu diulang</h3><div class="c">${z.wrong.map(c=>`<div class="r"><span>${E(c.jp||c.ro)} <span class="m">${c.jp&&c.ro?E(c.ro):''}</span></span><b>${E(c.me)}</b></div>`).join('')}</div>`:'<div class="c">Semua benar. Bagus sekali.</div>')+`<div class="act"><div class="g"><button class="b s" onclick="go('home')" style="margin:0">Home</button><button class="b" onclick="startQuiz(QZ.kind)" style="margin:0">Kuis lagi</button></div></div>`}
  const it=z.q[z.i],c=it.c;
  return`<div class="top"><div class="pg"><i style="width:${Math.round(z.i/z.q.length*100)}%"></i></div><span class="m">${z.i+1} / ${z.q.length}</span></div><div class="tools"><button class="ib" onclick="go('study')">Keluar</button><span class="m" style="align-self:center">${z.kind=='ear'?'Kuis dengar':'Kuis cepat'} · tidak mengubah jadwal</span></div>
-<div class="c fc">${it.dir=='ear'?`<button class="ib" style="align-self:center;padding:18px 24px" onclick="sp(${c.id})">${ic('spk',34)}</button><div class="m">${z.sel==null?'Dengarkan, lalu pilih artinya':''}</div>${z.sel!=null?`<div class="jp" style="font-size:36px">${E(c.jp||c.ro)}</div>${c.jp&&c.ro?`<div class="ro">${E(c.ro)}</div>`:''}`:''}`:it.dir=='jp'?`<div class="jp">${E(c.jp||c.ro)}</div>${c.jp&&c.ro?`<div class="ro">${E(c.ro)}</div>`:''}`:`<div class="mean">${E(c.me)}</div>`}</div>`+
+<div class="c fc">${it.dir=='ear'?`<button class="ib" style="align-self:center;padding:18px 24px" onclick="sp(${c.id})">${ic('spk',34)}</button><div class="m">${z.sel==null?'Dengarkan, lalu pilih artinya':''}</div>${z.sel==null&&z.peek!==z.i?`<button class="ib" style="align-self:center" onclick="QZ.peek=QZ.i;render(1)">Suara tidak keluar? Tampilkan tulisan</button>`:''}${z.sel!=null||z.peek===z.i?`<div class="jp" style="font-size:36px">${E(c.jp||c.ro)}</div>${c.jp&&c.ro?`<div class="ro">${E(c.ro)}</div>`:''}`:''}`:it.dir=='jp'?`<div class="jp">${E(c.jp||c.ro)}</div>${c.jp&&c.ro?`<div class="ro">${E(c.ro)}</div>`:''}`:`<div class="mean">${E(c.me)}</div>`}</div>`+
  it.opts.map((o,k)=>{let cl='op';if(z.sel!=null){if(o.id==c.id)cl+=' ok';else if(k==z.sel)cl+=' no'}return`<button class="${cl}" onclick="pickQ(${k})">${it.dir!='id'?E(o.me):E(o.jp||o.ro)+(o.jp&&o.ro?` <span class="m">${E(o.ro)}</span>`:'')}</button>`}).join('')+
  (z.sel!=null?`<div class="act"><div><button class="b" onclick="nextQ()">${z.i+1>=z.q.length?'Lihat hasil':'Lanjut'}</button></div></div>`:'')}
 
@@ -820,7 +841,7 @@ function R(){if(S)return study();if(T)return typeView();if(MT)return matchView()
 function mkBackup(){D.set.lastBackup=Date.now();save();badgeCheck();$('#bk').value=JSON.stringify({app:'kotoba-memory',v:3,at:Date.now(),data:D});$('#bk').select()}
 function cpBackup(){mkBackup();const t=$('#bk').value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Backup disalin')).catch(()=>{$('#bk').select();try{document.execCommand('copy');toast('Backup disalin')}catch(e){toast('Tekan lama teks lalu pilih Salin')}})}
 function restore2(){const d=window._bk.data;D=Object.assign({cards:[],batches:[],hist:[],set:{},nid:1,bid:1,quiz:[],prac:[]},d);D.set=Object.assign({},SET0,D.set||{});D.set.v2=1;D.set.v3=1;if(!Array.isArray(D.quiz))D.quiz=[];if(!Array.isArray(D.prac))D.prac=[];save();applyTheme();toast('Backup dipulihkan');go('home')}
-function applyTheme(){document.documentElement.setAttribute('data-theme',D.set.theme||'cosmos');document.documentElement.classList.toggle('calm',!!D.set.calm)}
+function applyTheme(){document.documentElement.setAttribute('data-theme',D.set.theme||'cosmos');document.documentElement.classList.toggle('calm',!!D.set.calm);applyLite()}
 const NV=[['home','Home'],['study','Belajar'],['words','Kotoba'],['stats','Statistik'],['batch','Bab'],['set','Setelan']];
 const NVI={home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',study:'<path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z"/><path d="M12 6v14"/>',words:'<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',stats:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',batch:'<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/>',set:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'};
 const nvSvg=k=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NVI[k]}</svg>`;
@@ -1129,23 +1150,94 @@ function memView(){const m=MG;
  return barTop(Math.round(m.done.length/16*100),'Langkah '+m.moves)+`<div class="tools"><span class="m" style="align-self:center">Memory · ingat kata</span><button class="ib" onclick="go('game')">Keluar</button></div><p class="m">Ketuk dua kotak: kata Jepang dan artinya harus cocok.</p><div class="mg">${m.t.map((x,i)=>{const sh2=m.open.includes(i)||m.done.includes(i);return`<button class="mc${m.done.includes(i)?' ok':''}${m.bad&&m.open.includes(i)?' no':''}${x.k=='j'?' jj':''}" onclick="memTap(${i})">${sh2?E(x.x):I('star',20)}</button>`}).join('')}</div>`}
 
 /* ---------- Latihan mendengar ---------- */
-function listenView(){return hdr('Latihan Mendengar')+`<p class="m" style="margin:-4px 2px 8px">Dengarkan suara kata Jepang, lalu pilih artinya. Jadwal review tidak berubah.</p>${[['Level 1 (Mudah)','10 pertanyaan · dari kata yang sudah kuat',10,'mudah','#2de1d3'],['Level 2 (Sedang)','15 pertanyaan · semua kata',15,'sedang','#fbbf24'],['Level 3 (Sulit)','20 pertanyaan · kata yang masih lemah',20,'sulit','#fb7185']].map(x=>row(`startQuiz('ear',${x[2]},'${x[3]}')`,'ear',x[0],x[1],x[4])).join('')}`}
+function listenView(){return hdr('Latihan Mendengar')+`<p class="m" style="margin:-4px 2px 8px">Dengarkan suara kata Jepang, lalu pilih artinya. Jadwal review tidak berubah.</p>${row('spTest()','spk','Tes suara','Putar こんにちは dulu untuk memastikan suaranya keluar','#2de1d3')}${[['Level 1 (Mudah)','10 pertanyaan · dari kata yang sudah kuat',10,'mudah','#2de1d3'],['Level 2 (Sedang)','15 pertanyaan · semua kata',15,'sedang','#fbbf24'],['Level 3 (Sulit)','20 pertanyaan · kata yang masih lemah',20,'sulit','#fb7185']].map(x=>row(`startQuiz('ear',${x[2]},'${x[3]}')`,'ear',x[0],x[1],x[4])).join('')}`}
 
-/* ---------- AI Asisten (offline: menyiapkan pertanyaan) ---------- */
+/* ---------- AI Asisten (lokal: jalan tanpa internet) ---------- */
+const AX=(j,r,i)=>'<div class="ex"><div class="jpx">'+j+'</div><div class="m">'+r+'</div><div>'+i+'</div></div>';
+const AIX=[];
+const TOP=[
+ {ch:['は'],ro:['wa','ha'],t:'は (wa): penanda topik',h:'<p>Menandai topik, yaitu hal yang sedang dibicarakan. Ditulis は tapi dibaca <b>wa</b>.</p>'+AX('私は学生です。','Watashi wa gakusei desu.','Saya pelajar.')+AX('田中さんは先生です。','Tanaka-san wa sensei desu.','Pak/Bu Tanaka adalah guru.')},
+ {ch:['が'],ro:['ga'],t:'が (ga): penanda subjek',h:'<p>Menandai subjek, terutama untuk informasi baru, penekanan, dan kata tanya (だれ, なに). Juga dipakai bersama 好き (suka) dan わかる (paham).</p>'+AX('猫がいます。','Neko ga imasu.','Ada kucing.')+AX('誰が来ましたか。','Dare ga kimashita ka.','Siapa yang datang?')+AX('私は犬が好きです。','Watashi wa inu ga suki desu.','Saya suka anjing.')},
+ {ch:['を'],ro:['wo','o'],t:'を (o): penanda objek',h:'<p>Menandai objek langsung dari kata kerja. Ditulis を tapi dibaca <b>o</b>.</p>'+AX('水を飲みます。','Mizu o nomimasu.','Minum air.')+AX('本を読みます。','Hon o yomimasu.','Membaca buku.')},
+ {ch:['に'],ro:['ni'],t:'に (ni): waktu, tujuan, penerima, tempat berada',h:'<p>Menandai waktu tertentu, tujuan gerak, orang yang dituju, dan tempat sesuatu berada.</p>'+AX('七時に起きます。','Shichiji ni okimasu.','Bangun jam tujuh.')+AX('学校に行きます。','Gakkou ni ikimasu.','Pergi ke sekolah.')+AX('友達に会います。','Tomodachi ni aimasu.','Bertemu teman.')+AX('机の上に本があります。','Tsukue no ue ni hon ga arimasu.','Ada buku di atas meja.')},
+ {ch:['で'],ro:['de'],t:'で (de): tempat kegiatan, alat, cara',h:'<p>Menandai tempat berlangsungnya suatu kegiatan, alat atau cara, dan bahasa yang dipakai.</p>'+AX('図書館で勉強します。','Toshokan de benkyou shimasu.','Belajar di perpustakaan.')+AX('バスで行きます。','Basu de ikimasu.','Pergi naik bus.')+AX('日本語で話します。','Nihongo de hanashimasu.','Berbicara dalam bahasa Jepang.')},
+ {ch:['の'],ro:['no'],t:'の (no): milik atau hubungan',h:'<p>Menyambung dua kata untuk menyatakan kepemilikan atau hubungan, mirip "milik" atau "dari".</p>'+AX('私の本です。','Watashi no hon desu.','Ini buku saya.')+AX('日本語の先生','Nihongo no sensei','Guru bahasa Jepang')},
+ {ch:['も'],ro:['mo'],t:'も (mo): juga',h:'<p>Berarti "juga". Menggantikan は, が, atau を.</p>'+AX('私も学生です。','Watashi mo gakusei desu.','Saya juga pelajar.')},
+ {ch:['と'],ro:['to'],t:'と (to): dan, bersama',h:'<p>Menyambung benda ("dan") atau menyatakan "bersama".</p>'+AX('りんごとみかん','Ringo to mikan','Apel dan jeruk')+AX('友達と行きます。','Tomodachi to ikimasu.','Pergi bersama teman.')},
+ {ch:['へ'],ro:['he','e'],t:'へ (e): arah tujuan',h:'<p>Menandai arah tujuan, mirip に. Ditulis へ tapi dibaca <b>e</b>.</p>'+AX('学校へ行きます。','Gakkou e ikimasu.','Pergi ke sekolah.')},
+ {ch:['から','まで'],ro:['kara','made'],t:'から dan まで: dari, karena, sampai',h:'<p><b>から</b> = dari (waktu atau tempat), atau "karena". <b>まで</b> = sampai.</p>'+AX('九時から五時まで働きます。','Kuji kara goji made hatarakimasu.','Bekerja dari jam 9 sampai jam 5.')+AX('忙しいですから、行きません。','Isogashii desu kara, ikimasen.','Karena sibuk, saya tidak pergi.')},
+ {ch:['か'],ro:['ka'],t:'か (ka): penanda pertanyaan',h:'<p>Ditaruh di akhir kalimat untuk menjadikannya pertanyaan. Tidak perlu tanda tanya.</p>'+AX('学生ですか。','Gakusei desu ka.','Apakah (kamu) pelajar?')+AX('食べますか。','Tabemasu ka.','Apakah makan?')},
+ {kw:/kata sifat|adjektiva|i-?adj|na-?adj|い形容詞|な形容詞/i,t:'Kata sifat い dan な',h:'<p><b>Kata sifat -i</b> berakhiran い. Negatif: ganti い dengan くない. Lampau: かった.</p>'+AX('高いです。','Takai desu.','Mahal / tinggi.')+AX('高くないです。','Takakunai desu.','Tidak mahal.')+AX('高かったです。','Takakatta desu.','Dulu mahal.')+'<p><b>Kata sifat -na</b> memakai な sebelum kata benda. Beberapa berakhiran い tapi tergolong -na, misalnya きれい.</p>'+AX('静かな町です。','Shizuka na machi desu.','Kota yang tenang.')+AX('きれいな花','Kirei na hana','Bunga yang cantik')},
+ {kw:/lampau|past tense|mashita|ました|kemarin/i,w:1,t:'Bentuk lampau',h:'<p>ます jadi <b>ました</b>, です jadi <b>でした</b>. Negatif lampau: ませんでした.</p>'+AX('昨日、映画を見ました。','Kinou, eiga o mimashita.','Kemarin menonton film.')+AX('食べませんでした。','Tabemasen deshita.','Tidak makan (tadi).')+AX('学生でした。','Gakusei deshita.','Dulu pelajar.')},
+ {kw:/ajak|ませんか|ましょう|masen ka|mashou/i,w:1,t:'Mengajak: 〜ませんか dan 〜ましょう',h:'<p><b>〜ませんか</b> = "maukah ...?" (ajakan sopan). <b>〜ましょう</b> = "mari ...".</p>'+AX('一緒に食べませんか。','Issho ni tabemasen ka.','Maukah makan bersama?')+AX('食べましょう。','Tabemashou.','Mari makan.')},
+ {kw:/te[- ]?form|bentuk[- ]?te\b|て形|て-?form/i,t:'Bentuk て (te-form)',h:'<p>Dipakai untuk meminta (〜てください), merangkai kegiatan, dan menyatakan sedang (〜ています).</p><p><b>Ichidan</b>: buang る, tambah て (食べる → 食べて).<br><b>Godan</b>: う・つ・る → って (買って, 待って, 帰って); む・ぶ・ぬ → んで (飲んで, 遊んで); く → いて (書いて, tapi 行って); ぐ → いで (泳いで); す → して (話して).<br><b>Tak beraturan</b>: する → して, 来る → きて.</p>'+AX('ちょっと待ってください。','Chotto matte kudasai.','Tolong tunggu sebentar.')+AX('本を読んでいます。','Hon o yonde imasu.','Sedang membaca buku.')},
+ {kw:/bentuk\s*nai|nai[- ]?form|ない形|bentuk negatif|negatif kata kerja/i,t:'Bentuk ない (negatif kasual)',h:'<p><b>Ichidan</b>: buang る, tambah ない (食べる → 食べない).<br><b>Godan</b>: ubah vokal akhir ke baris あ, lalu ない (書く → 書かない, 飲む → 飲まない, 話す → 話さない, 買う → 買わない).<br><b>Tak beraturan</b>: する → しない, 来る → こない.</p>'+AX('肉を食べない。','Niku o tabenai.','Tidak makan daging.')},
+ {kw:/tai[- ]?form|bentuk\s*tai|たい形|cara bilang ingin/i,t:'〜たい: ingin melakukan',h:'<p>Ambil bentuk ます tanpa ます, tambah <b>たい</b>. Negatif: たくない.</p>'+AX('食べたいです。','Tabetai desu.','Ingin makan.')+AX('日本に行きたいです。','Nihon ni ikitai desu.','Ingin pergi ke Jepang.')+AX('食べたくないです。','Tabetakunai desu.','Tidak ingin makan.')},
+ {kw:/golongan|ichidan|godan|ru[- ]?verb|u[- ]?verb|kelompok kata kerja/i,t:'Golongan kata kerja',h:'<p><b>Ichidan (grup 2)</b>: berakhiran る dengan bunyi い atau え sebelumnya, misalnya 食べる, 見る, 起きる.<br><b>Godan (grup 1)</b>: sisanya, misalnya 飲む, 書く, 話す, 買う.<br><b>Pengecualian godan</b> yang mirip ichidan: 帰る, 入る, 切る, 知る, 走る.<br><b>Tak beraturan</b>: する dan 来る.</p>'},
+ {kw:/hiragana|katakana|kanji|huruf/i,t:'Hiragana, katakana, kanji',h:'<p><b>Hiragana</b> (46 dasar): kata asli dan tata bahasa. <b>Katakana</b>: kata serapan dan nama asing (コーヒー). <b>Kanji</b>: huruf yang membawa makna.</p><p>Urutan belajar yang umum: hiragana dulu, lalu katakana, lalu kanji sedikit demi sedikit bersama kosakata.</p>'},
+ {kw:/jlpt|\bn[1-5]\b/i,t:'Level JLPT',h:'<p>N5 paling mudah, N1 paling sulit. Perkiraan kosakata kumulatif yang sering disebut: N5 sekitar 800, N4 sekitar 1.500, N3 sekitar 3.750, N2 sekitar 6.000, N1 sekitar 10.000. Angkanya perkiraan, bukan daftar resmi.</p>',acts:[['Lihat kemajuan level',"STAB='lvl';go('stats')"]]},
+ {kw:/angka|bilangan|nomor/i,t:'Angka 1 sampai 10',h:AX('一 二 三 四 五','ichi, ni, san, yon (shi), go','1, 2, 3, 4, 5')+AX('六 七 八 九 十','roku, nana (shichi), hachi, kyuu (ku), juu','6, 7, 8, 9, 10')},
+ {kw:/salam|ohayou|konnichiwa|konbanwa|arigatou|sumimasen|gomen|oyasumi|sayonara|terima kasih|selamat (pagi|siang|malam|tidur)|permisi|maaf|itadakimasu/i,w:1,t:'Salam sehari-hari',h:AX('おはようございます。','Ohayou gozaimasu.','Selamat pagi.')+AX('こんにちは。','Konnichiwa.','Selamat siang.')+AX('こんばんは。','Konbanwa.','Selamat malam.')+AX('ありがとうございます。','Arigatou gozaimasu.','Terima kasih.')+AX('すみません。','Sumimasen.','Permisi / maaf.')+AX('いただきます。','Itadakimasu.','Ucapan sebelum makan.')+AX('ごちそうさまでした。','Gochisousama deshita.','Ucapan setelah makan.')},
+ {kw:/kosoado|\bkore\b|\bsore\b|\bare\b|\bdore\b|\bkono\b|\bsono\b|\bano\b|これ|それ|あれ|この|その|あの/i,w:1,t:'これ・それ・あれ',h:'<p><b>こ</b> dekat pembicara, <b>そ</b> dekat lawan bicara, <b>あ</b> jauh dari keduanya, <b>ど</b> kata tanya.</p><p>これ / それ / あれ / どれ (benda). この / その / あの / どの (di depan kata benda). ここ / そこ / あそこ / どこ (tempat).</p>'+AX('これは本です。','Kore wa hon desu.','Ini buku.')+AX('その本はおもしろいです。','Sono hon wa omoshiroi desu.','Buku itu menarik.')},
+ {kw:/です|ます|\bdesu\b|\bmasu\b|bentuk sopan|kalimat sopan/i,w:1,t:'です dan ます',h:'<p><b>です</b> menutup kalimat tentang benda atau sifat ("adalah"). <b>ます</b> adalah akhiran sopan untuk kata kerja. Keduanya sama-sama sopan, bedanya tempat pakai.</p>'+AX('学生です。','Gakusei desu.','(Saya) pelajar.')+AX('食べます。','Tabemasu.','Makan.')+'<p>Negatif: ではありません / ません. Lampau: でした / ました.</p>'},
+ {kw:/tips|cara (belajar|menghafal|hafal)|metode|trik|keledai|mnemonic|strategi|biar (cepat )?hafal|supaya hafal/i,t:'Cara menghafal lebih cepat',h:'<p>1. Ulangi sesuai jadwal, jangan menumpuk. 15 menit tiap hari lebih ampuh daripada 2 jam seminggu sekali.</p><p>2. Ucapkan kata dengan suara keras, bukan hanya dibaca.</p><p>3. Pakai kata dalam kalimat buatanmu sendiri, sependek apa pun.</p><p>4. Tulis jembatan keledai di Catatan kartu, misalnya kata mirip bahasa Indonesia.</p><p>5. Kata yang terus lupa dilatih terpisah lewat Kata bandel.</p>',acts:[['Latih kata bandel',"start('leech')"]]},
+ {kw:/memory score|skor|nilai kartu|hafal itu|srs|interval|spaced|kenapa.*(muncul|lagi)/i,t:'Cara kerja Memory Score dan jadwal',h:'<p>Memory Score 0 sampai 100 dihitung dari tiga hal: panjang interval review (60%, penuh di 30 hari), akurasi jawaban (25%), dan seberapa sering kamu menjawab Ulang (15%).</p><p>Hafal = 90 ke atas, kuat = 70 ke atas, lemah = di bawah 40.</p><p>Jawab Baik atau Mudah, jarak review makin jauh. Jawab Ulang, kata kembali besok.</p>'},
+ {kw:/bintang|rasi|galaksi|lencana|\bxp\b/i,t:'Bintang, lencana, dan XP',h:'<p>Satu bintang menyala tiap 20 kata yang sudah kamu pelajari, dan berubah emas tiap 20 kata yang kuat (skor 70 ke atas). XP didapat dari tiap jawaban, 1.000 XP naik satu level.</p>',acts:[['Buka peta galaksi',"go('map')"]]},
+ {kw:/cara (pakai|pake|main|mulai)|bantuan|panduan/i,t:'Cara pakai singkat',h:'<p>1. Tempel atau tambah kata lewat Impor.</p><p>2. Buka Belajar, pilih Kotoba baru, tekan Tampilkan jawaban, lalu nilai: Ulang, Sulit, Baik, atau Mudah.</p><p>3. Kembali tiap hari untuk Review. Aplikasi mengatur kapan tiap kata muncul lagi.</p><p>4. Buat backup berkala di Pengaturan.</p>'}];
+function aiTopic(q,weak){const t=q.trim().replace(/[?？!.。\s]+$/g,''),kwp=/partikel|particle|fungsi|kegunaan|cara pakai|penggunaan/i.test(q);
+ if(weak)for(const T of TOP)if(T.kw&&T.w&&T.kw.test(q))return T;
+ for(const T of TOP){
+  if(T.kw){if(T.kw.test(q)&&!!T.w===!!weak)return T;continue}
+  const hitCh=T.ch.some(c=>q.includes(c)),hitRo=T.ro.some(r=>new RegExp('(^|[^a-z])'+r+'([^a-z]|$)','i').test(q));
+  if(!weak&&(t===T.ch[0]||(kwp&&(hitCh||hitRo))))return T;
+  if(weak&&t.length<=14&&(hitCh||(hitRo&&t.split(/\s+/).length<=2)))return T}
+ return null}
+function aiCompare(q){const beda=/beda|perbedaan|vs\b|versus|bandingkan|atau/i.test(q),wa=/は|\bwa\b|\bha\b/i.test(q),ga=/が|\bga\b/i.test(q),de=/です|\bdesu\b/i.test(q),ma=/ます|\bmasu\b/i.test(q);
+ if(beda&&wa&&ga)return{h:'<b>は vs が</b><p><b>は</b> membingkai topik ("kalau soal X ..."), sering untuk hal yang sudah diketahui atau untuk kontras. <b>が</b> menunjuk subjek sebagai informasi baru atau jawaban dari "siapa/apa".</p><p>Pegangan praktis: jawaban dari kata tanya pakai が. Perkenalan dan pernyataan umum pakai は.</p>'+AX('私は学生です。','Watashi wa gakusei desu.','Saya (topiknya) pelajar.')+AX('誰が学生ですか。','Dare ga gakusei desu ka.','Siapa yang pelajar?')+AX('私が学生です。','Watashi ga gakusei desu.','Sayalah yang pelajar.')};
+ if(beda&&de&&ma)return{h:'<b>です vs ます</b><p><b>です</b> menutup kalimat tentang benda atau sifat ("adalah"). <b>ます</b> adalah akhiran sopan untuk kata kerja. Sama-sama sopan, beda tempat pakai.</p>'+AX('学生です。','Gakusei desu.','(Saya) pelajar.')+AX('食べます。','Tabemasu.','Makan.')+'<p>Negatif: ではありません / ません. Lampau: でした / ました.</p>'};
+ return null}
+const STOP=new Set(['kata','yang','apa','arti','ini','itu','dan','atau','dari','untuk','aku','saya','dengan','bisa','cara','buat','beda','bedanya','contoh','sering','lupa','sulit','susah','tes','kuis','mau','tolong','jelaskan','kalimat','dalam','bahasa','jepang','tanya','cek','kamu','ada','apakah','bagaimana','gimana','kenapa','sudah','berapa']);
+function aiFind(q){const toks=(q.toLowerCase().match(/[a-z0-9]+/g)||[]),wins=new Set(),lw=new Set();
+ for(let i=0;i<toks.length;i++){let s='';for(let k=0;k<3&&i+k<toks.length;k++){s+=toks[i+k];if(k==0&&STOP.has(toks[i]))continue;wins.add(norm(s));lw.add(lng(s))}}
+ const hits=[];
+ D.cards.forEach(c=>{let s=0;
+  if(c.jp&&(c.jp.length>=2||/[\u4e00-\u9fff]/.test(c.jp))&&q.includes(c.jp))s=10+c.jp.length;
+  String(c.ro||'').split(/[\/;,]/).forEach(r=>{const n=norm(r);if(n&&lw.has(lng(r)))s=Math.max(s,8+n.length)});
+  meParts(c.me).forEach(p=>{if(p&&wins.has(p)&&!STOP.has(p))s=Math.max(s,6+p.length)});
+  if(s)hits.push([s,c])});
+ return hits.sort((a,b)=>b[0]-a[0]).slice(0,3).map(x=>x[1])}
 function aiWords(n){return D.cards.filter(c=>c.lp>0||(learned(c)&&sc(c)<70)).sort((a,b)=>b.lp-a.lp).slice(0,n||5)}
-const AIP={
- arti:()=>{const c=aiWords(1)[0]||D.cards[0];return c?`Apa arti dan cara baca kata bahasa Jepang "${c.jp||c.ro}"${c.jp&&c.ro?' ('+c.ro+')':''}? Jelaskan dengan bahasa Indonesia yang sederhana untuk pemula.`:'Jelaskan 5 kata dasar bahasa Jepang untuk pemula.'},
- kalimat:()=>{const L=aiWords(5);return L.length?`Buatkan 1 contoh kalimat sederhana untuk tiap kata ini, lengkap dengan tulisan Jepang, romaji, dan arti Indonesia: ${L.map(c=>(c.jp||c.ro)+' ('+c.me+')').join(', ')}.`:'Buatkan 5 contoh kalimat sederhana bahasa Jepang N5 dengan romaji dan arti Indonesia.'},
- desumasu:()=>'Jelaskan perbedaan です dan ます dalam bahasa Jepang dengan bahasa Indonesia yang sederhana, beri 3 contoh kalimat beserta romaji dan artinya.',
- wa_ga:()=>'Jelaskan perbedaan partikel は dan が dalam bahasa Jepang untuk pemula, beri contoh kalimat dengan romaji dan arti Indonesia.',
- cerita:()=>{const L=aiWords(6);return L.length?`Buatkan cerita pendek (4 kalimat) dalam bahasa Jepang sederhana, lengkap dengan romaji dan terjemahan Indonesia, yang memakai kata-kata ini: ${L.map(c=>(c.jp||c.ro)+' ('+c.me+')').join(', ')}.`:'Buatkan cerita pendek 4 kalimat bahasa Jepang N5 dengan romaji dan terjemahan Indonesia.'}};
-function aiSend(k){const q=k?AIP[k]():AIQ.trim();if(!q){toast('Tulis pertanyaanmu dulu.');return}
- const full=k?q:`Aku sedang belajar bahasa Jepang (pemula). ${q} Tolong jawab dengan bahasa Indonesia yang sederhana.`;
- AIM.push({u:k?({arti:'Apa arti kata yang sering kulupa?',kalimat:'Buat contoh kalimat',desumasu:'Jelaskan perbedaan です & ます',wa_ga:'Jelaskan partikel は dan が',cerita:'Buat cerita dari kata sulitku'})[k]:q});
- AIM.push({a:'Pertanyaan sudah disalin. Buka Claude atau ChatGPT, lalu tempel (tekan lama, Tempel).'});AIQ='';copyTxt(full,'Pertanyaan disalin');render(1);setTimeout(()=>{const e=$('#aichat');if(e)e.scrollTop=e.scrollHeight},50)}
-function aiView(){return hdr('AI Asisten')+`<div class="chat" id="aichat"><div class="bub a"><span class="bi">${I('ai',20)}</span><div>Halo ${E(D.set.name||'Pelajar')}! Aku bisa menyiapkan pertanyaan untuk Claude atau ChatGPT: arti kata, contoh kalimat, dan penjelasan tata bahasa. Mau tanya apa hari ini?<div class="m" style="margin-top:6px">Aplikasi ini bekerja tanpa internet, jadi pertanyaannya disalin dan kamu tempel sendiri ke aplikasi AI.</div></div></div>${AIM.map(x=>x.u?`<div class="bub u">${E(x.u)}</div>`:`<div class="bub a"><span class="bi">${I('ai',20)}</span><div>${E(x.a)}</div></div>`).join('')}</div>
-<div class="sugs">${[['arti','Apa arti kata yang sering kulupa?'],['kalimat','Buat contoh kalimat'],['desumasu','Jelaskan perbedaan です & ます'],['wa_ga','Jelaskan partikel は dan が'],['cerita','Buat cerita dari kata sulitku']].map(x=>`<button onclick="aiSend('${x[0]}')">${x[1]}</button>`).join('')}</div>
-<div class="sr ai"><input id="aiq" placeholder="Tulis pertanyaan..." value="${E(AIQ)}" oninput="AIQ=this.value" onkeydown="if(event.key=='Enter')aiSend()"><button class="send" onclick="aiSend()" aria-label="Kirim">${I('send',20)}</button></div>`}
+function aiSent(c){const jp=c.jp;if(!jp)return null;
+ if(/ます$/.test(jp))return AX('毎日'+E(jp)+'。','Mainichi '+E(c.ro||'')+'.','Setiap hari: '+E(c.me)+'.');
+ return AX('これは'+E(jp)+'です。','Kore wa '+E(c.ro||'')+' desu.','Ini adalah: '+E(c.me)+'.')}
+function aiWordHtml(c){const s=sc(c),stt=!learned(c)?'Baru':s>=HAFAL?'Hafal':s<40?'Lemah':'Sedang dipelajari',b=D.batches.find(x=>x.id==c.b);
+ return'<div style="margin-bottom:8px"><b class="jpx" style="font-size:20px">'+E(c.jp||c.ro)+'</b>'+(c.jp&&c.ro?' <span class="m">'+E(c.ro)+'</span>':'')+'<div>'+E(c.me)+'</div><div class="m">'+[c.lv,b?'Bab '+b.day+' '+E(b.name):'',stt+(learned(c)?' · skor '+s+'/100':'')].filter(x=>x).join(' · ')+'</div>'+(c.note?'<div class="note">Catatan: '+E(c.note)+'</div>':'')+'</div>'}
+function aiAnswer(q){q=q.trim();let m=aiCompare(q);if(m)return m;
+ let T=aiTopic(q,false);if(T)return{h:'<b>'+T.t+'</b>'+T.h,acts:T.acts};
+ const W=D.cards.length?aiFind(q):[];
+ if(/kalimat|contoh/i.test(q)){const L=W.length?W:(aiWords(5).length?aiWords(5):D.cards.slice(0,5));
+  if(!L.length)return{h:'Belum ada kata di daftarmu. Tambahkan kata dulu, lalu aku buatkan contoh kalimatnya.'};
+  const rows=L.map(c=>{const s=aiSent(c);return s?'<div style="margin-top:8px"><b>'+E(c.jp||c.ro)+'</b> <span class="m">'+E(c.me)+'</span>'+s+'</div>':''}).join('');
+  return{h:'<p>Contoh kalimat dengan pola dasar:</p>'+(rows||'<p>Kata-kata ini belum punya tulisan Jepang. Isi dulu lewat Edit kartu.</p>')+'<div class="m" style="margin-top:6px">Ini contoh otomatis dari pola dasar. Kalau katanya bukan benda atau kata kerja, sesuaikan polanya.</div>'}}
+ if(W.length){const c=W[0];return{h:W.map(aiWordHtml).join(''),acts:[['Dengar',"sp("+c.id+")"],['Buka kartu',"CD="+c.id+";render()"]]}}
+ if(/\b(kuis|quiz|tes|ujian|latihan|game)\b/i.test(q))return{h:'<p>Pilih latihannya:</p>',acts:[['Quiz cepat',"startQuiz()"],['Ketik jawaban',"startType()"],['Cocokkan',"startMatch()"],['Dengar',"startQuiz('ear',10,'sedang')"],['60 detik',"startT60()"]]};
+ if(/lupa|lemah|sulit|susah|bandel|sering salah/i.test(q)){const L=aiWords(8);
+  if(!L.length)return{h:'Belum ada kata yang tercatat sulit. Mulai belajar dulu, nanti kata yang sering kamu lupa muncul di sini.'};
+  return{h:'<p>Kata yang paling perlu perhatian:</p>'+L.map(c=>'<div class="r lk" onclick="CD='+c.id+';render()"><span>'+E(c.jp||c.ro)+' · '+E(c.me)+'</span><b>'+(learned(c)?sc(c)+'/100':'Baru')+'</b></div>').join(''),acts:[['Latih kata sulit',"start('hard')"],['Kata bandel',"start('leech')"]]}}
+ if(/progres|progress|statistik|kemajuan|capaian|streak|berapa/i.test(q)){const td=D.hist.filter(x=>x.at>=sod()).length,cc=catCounts(),st=streakInfo(dayCounts());
+  return{h:'<p>Total '+D.cards.length+' kata: '+cc.h+' hafal, '+cc.m+' dalam proses, '+cc.l+' lemah, '+cc.b+' baru.</p><p>Hari ini '+td+' review (target '+(D.set.goal||30)+'). Beruntun '+st.cur+' hari, rekor '+st.best+'.</p>',acts:[['Lihat statistik',"go('stats')"]]}}
+ T=aiTopic(q,true);if(T)return{h:'<b>'+T.t+'</b>'+T.h,acts:T.acts};
+ return{h:'<p>Aku belum menemukan jawabannya di daftar katamu atau materi bawaan. Coba tulis kata dari daftarmu, nama partikel (は, を, に ...), atau topik seperti bentuk て, kata sifat, salam, angka. Untuk pertanyaan bebas, pakai tombol di bawah.</p>',ext:true}}
+function aiTail(q,r){AIX.push('Aku sedang belajar bahasa Jepang (pemula). '+q+'\nJawab dalam bahasa Indonesia yang sederhana, sertakan romaji dan contoh kalimat.');const i=AIX.length-1,p=encodeURIComponent(AIX[i]);
+ return(r.acts&&r.acts.length?'<div class="lk2">'+r.acts.map(a=>'<button class="b sm" onclick="'+a[1]+'">'+a[0]+'</button>').join('')+'</div>':'')+'<div class="m" style="margin-top:10px">'+(r.ext?'Butuh jawaban yang lebih bebas? Tanya di:':'Mau penjelasan lebih panjang? Tanya di:')+'</div><div class="lk2"><a class="b s sm" href="https://claude.ai/new?q='+p+'" target="_blank" rel="noopener">Claude</a><a class="b s sm" href="https://chatgpt.com/?q='+p+'" target="_blank" rel="noopener">ChatGPT</a><button class="b s sm" onclick="copyTxt(AIX['+i+'],\'Pertanyaan disalin\')">Salin</button></div>'}
+const AICH=['Kata yang sering kulupa','Contoh kalimat dari kata sulitku','Beda です & ます','Beda は & が','Cara menghafal lebih cepat','Bentuk て (te-form)'];
+function aiChatHtml(){return'<div class="bub a"><span class="bi">'+I('ai',20)+'</span><div class="ans">Halo '+E(D.set.name||'Pelajar')+'! Aku asisten belajar yang jalan langsung di aplikasi, jadi bisa dipakai tanpa internet. Aku bisa mencari arti kata dari daftarmu, menjelaskan partikel dan pola kalimat, membuat contoh kalimat, dan memeriksa kata sulit atau progresmu.</div></div>'+AIM.map(x=>x.u!=null?'<div class="bub u">'+E(x.u)+'</div>':'<div class="bub a"><span class="bi">'+I('ai',20)+'</span><div class="ans">'+x.h+'</div></div>').join('')}
+function aiPaint(){const e=$('#aichat');if(e)e.innerHTML=aiChatHtml();const i=$('#aiq');if(i)setTimeout(()=>{try{i.scrollIntoView({block:'end',behavior:'smooth'})}catch(e){}},30)}
+function aiSend(t){const inp=$('#aiq'),q=String(t!=null?t:(inp?inp.value:AIQ)).trim();if(!q){toast('Tulis pertanyaanmu dulu.');return}
+ let r;try{r=aiAnswer(q)}catch(e){r={h:'Maaf, ada kendala saat menjawab. Coba tulis ulang pertanyaannya.',ext:true}}
+ AIM.push({u:q});AIM.push({h:r.h+aiTail(q,r)});if(AIM.length>40)AIM=AIM.slice(-40);AIQ='';if(inp)inp.value='';aiPaint()}
+function aiChip(i){aiSend(AICH[i])}
+function aiView(){return hdr('AI Asisten')+'<div class="chat" id="aichat">'+aiChatHtml()+'</div><div class="sugs">'+AICH.map((x,i)=>'<button onclick="aiChip('+i+')">'+x+'</button>').join('')+'</div><div class="sr ai"><input id="aiq" placeholder="Tulis pertanyaan atau kata..." value="'+E(AIQ)+'" oninput="AIQ=this.value" onkeydown="if(event.key==\'Enter\')aiSend()"><button class="send" onclick="aiSend()" aria-label="Kirim">'+I('send',20)+'</button></div>'}
 
 /* ---------- Lainnya ---------- */
 function moreView(){return hdr('Lainnya')+row("go('words')",'list','Daftar Kata',D.cards.length+' kotoba','#6f7dff')+row("go('add')",'plus','Tambah Kata','Tulis satu kata baru','#2de1d3')+row("go('imp')",'imp','Impor Kotoba','Tempel atau buka file teks','#818cf8')+row("go('batch')",'layers','Bab',D.batches.length+' bab','#a78bfa')+row("go('gram')",'gram','Bunyi & Pola Kalimat','Materi dan catatan tata bahasa','#fbbf24')+row("go('music')",'music','Musik Angkasa','3 lagu instrumental','#2de1d3')+row("go('listen')",'ear','Latihan Mendengar','Dengar lalu pilih arti','#60a5fa')}
@@ -1206,7 +1298,7 @@ function gramView(){const g=D.set.gram||{},n=GR.filter((x,i)=>g[i]).length;let b
 function setView(){const s=D.set,bd=s.lastBackup?Math.floor((Date.now()-s.lastBackup)/DAY):null,dt=(id,ico,t,sub,body)=>`<details class="row2" ${OP.has(id)?'open':''} ontoggle="togOp('${id}',this.open)"><summary><span class="ri">${I(ico,22)}</span><span class="rt2"><b>${t}</b><small>${sub}</small></span>${I('chevron',18)}</summary><div class="gb">${body}</div></details>`,
  sel=(k,opts)=>`<select onchange="setS('${k}',this.value)">${opts.map(o=>`<option value="${o[0]}"${String(s[k])==String(o[0])?' selected':''}>${o[1]}</option>`).join('')}</select>`;
  return hdr('Pengaturan')+`<div class="c pc"><div class="av">${I('user',26)}</div><div class="pi"><div class="m">Nama panggilan</div><input value="${E(s.name||'')}" placeholder="Pelajar" onchange="setS('name',this.value)"></div></div>`+
- dt('t','palette','Tema','Pilih latar belakang',themePick()+`<label class="ck"><input type="checkbox" ${s.calm?'checked':''} onchange="setS('calm',this.checked)"> Kurangi animasi (hemat baterai)</label>`)+
+ dt('t','palette','Tema','Pilih latar belakang',themePick()+`<label class="ck"><input type="checkbox" ${s.calm?'checked':''} onchange="setS('calm',this.checked)"> Kurangi animasi (hemat baterai)</label><label class="ck"><input type="checkbox" ${s.lite?'checked':''} onchange="setS('lite',this.checked)"> Mode ringan (untuk HP yang lag)</label>`)+
  dt('b','book','Belajar','Batas kata baru, arah kartu',`<div class="m">Batas kotoba baru per hari</div>${sel('target',[[0,'Tanpa batas'],[10,10],[20,20],[30,30],[50,50],[100,100],[200,200]])}<div class="m">Arah kartu</div>${sel('dir',[['jp','Jepang ke Indonesia'],['id','Indonesia ke Jepang'],['rand','Acak']])}<label class="ck"><input type="checkbox" ${s.hideRo?'checked':''} onchange="setS('hideRo',this.checked)"> Sembunyikan romaji sampai jawaban dibuka</label>`)+
  dt('k','save','Cadangan Data',bd==null?'Belum pernah backup':'Backup terakhir '+bd+' hari lalu',`<p class="m">Backup berupa teks. Salin, lalu simpan di Catatan atau WhatsApp ke diri sendiri. Untuk memulihkan, tempel lagi di sini.</p><button class="b sm" onclick="mkBackup()">Buat backup</button><button class="b s sm" onclick="cpBackup()">Salin</button><textarea id="bk" placeholder="Teks backup muncul atau ditempel di sini"></textarea><button class="b s" onclick="restore1()">Pulihkan dari teks ini</button><div id="rs"></div>`)+
  dt('h','help','Bantuan & FAQ','Cara pakai singkat',`<p><b>Cara belajar:</b> Belajar → Kotoba baru. Tekan Tampilkan jawaban, lalu pilih Ulang, Sulit, Baik, atau Mudah. Aplikasi mengatur kapan kata muncul lagi.</p><p><b>Hafal itu apa?</b> Kata dengan Memory Score 90 ke atas.</p><p><b>Bintang menyala:</b> 1 bintang tiap 20 kata yang sudah dipelajari, jadi emas tiap 20 kata yang kuat (skor 70+).</p><p><b>Data aman?</b> Data hanya ada di HP ini. Buat backup berkala, terutama sebelum memasang APK baru.</p><p><b>Hari libur beruntun:</b> bolos satu hari per minggu tidak memutus rangkaian.</p>`)+
@@ -1231,37 +1323,40 @@ IC.music='<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle c
 IC.play='<path d="M7 4l13 8-13 8z"/>';IC.pause='<path d="M7 4h4v16H7zM13 4h4v16h-4z"/>';IC.next='<path d="M5 4l10 8-10 8zM19 5v14"/>';IC.prev='<path d="M19 4L9 12l10 8zM5 5v14"/>';IC.vol='<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 010 6"/>';
 const mf=m=>440*Math.pow(2,(m-69)/12);
 const TRACKS=[
- {id:'nebula',n:'Nebula Drift',d:'Pad lembut dan tenang, cocok untuk fokus',bpm:56,bars:[[45,52,57,60,64],[41,48,53,57,64],[48,55,60,64,67],[43,50,55,59,62]],sp:[69,72,76,79,81,84],pad:'triangle',cut:900,spark:.32,mode:'spark'},
- {id:'orbit',n:'Orbit Tenang',d:'Arpeggio pelan, seperti berputar mengelilingi bintang',bpm:70,bars:[[50,57,60,64,67],[46,53,57,60,65],[43,50,58,62,65],[45,52,57,61,64]],sp:[],pad:'sine',cut:700,spark:0,mode:'arp'},
- {id:'aurora',n:'Fajar Aurora',d:'Hangat dan terang, seperti cahaya aurora',bpm:62,bars:[[50,57,62,66,69],[45,52,57,61,64],[47,54,59,62,66],[43,50,55,59,62]],sp:[74,76,78,81,83,86],pad:'triangle',cut:1300,spark:.18,mode:'mel'}];
-const MUS={ctx:null,m:null,rv:null,t:0,on:false,h:null,nx:0,st:0,vol:.5};
-function musInit(){if(MUS.ctx)return true;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)throw 0;const c=new C();MUS.ctx=c;
- MUS.m=c.createGain();MUS.m.gain.value=0;const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2400;MUS.m.connect(lp);lp.connect(c.destination);
- const dl=c.createDelay(1.0);dl.delayTime.value=.46;const fb=c.createGain();fb.gain.value=.38,dlp=c.createBiquadFilter();dlp.type='lowpass';dlp.frequency.value=1500;dl.connect(dlp);dlp.connect(fb);fb.connect(dl);dlp.connect(MUS.m);MUS.dl=dl;return true}catch(e){MUS.ctx=null;toast('Musik tidak didukung di perangkat ini.');return false}}
-function mv(f,t,dur,o){const c=MUS.ctx,osc=c.createOscillator(),g=c.createGain();osc.type=o.type;osc.frequency.value=f;if(o.det)osc.detune.value=o.det;osc.connect(g);
+ {id:'nebula',n:'Nebula Drift',d:'Pad lembut dan tenang, cocok untuk fokus',bpm:54,ch:[[57,60,64,69],[53,60,65,69],[55,60,64,67],[55,59,62,67]],sc:[69,72,74,76,79,81],mode:'spark'},
+ {id:'orbit',n:'Orbit Tenang',d:'Petikan pelan yang berputar, seperti mengorbit bintang',bpm:66,ch:[[50,57,62,65],[46,53,58,62],[48,55,60,64],[45,52,57,60]],sc:[],mode:'arp'},
+ {id:'aurora',n:'Fajar Aurora',d:'Hangat dan terang, seperti cahaya aurora',bpm:60,ch:[[62,66,69,74],[57,64,69,73],[59,66,71,74],[55,62,67,71]],sc:[74,76,78,81,83],mode:'mel'}];
+const MUS={ctx:null,out:null,bus:null,dl:null,t:0,on:false,h:null,nx:0,st:0,vol:1,k:2};
+function applyLite(){try{document.documentElement.classList.toggle('lite',!!(D.set.lite||MUS.on))}catch(e){}}
+function musInit(){if(MUS.ctx)return true;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)throw 0;let c;try{c=new C({latencyHint:'playback'})}catch(e){c=new C()}MUS.ctx=c;
+ const out=c.createGain();out.gain.value=MUS.vol*MUS.k;const cp=c.createDynamicsCompressor();cp.threshold.value=-10;cp.knee.value=6;cp.ratio.value=20;cp.attack.value=.003;cp.release.value=.25;
+ out.connect(cp);cp.connect(c.destination);MUS.out=out;return true}catch(e){MUS.ctx=null;toast('Musik tidak didukung di perangkat ini.');return false}}
+function musBus(){const c=MUS.ctx,bus=c.createGain();bus.gain.value=0;bus.connect(MUS.out);MUS.bus=bus;return bus}
+function mv(f,t,dur,o){const c=MUS.ctx,bus=MUS.bus;if(!bus)return;const osc=c.createOscillator(),g=c.createGain();osc.type=o.type;osc.frequency.value=f;osc.connect(g);
  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(o.v,t+o.a);g.gain.setValueAtTime(o.v,t+Math.max(o.a,dur-o.r));g.gain.linearRampToValueAtTime(0,t+dur);
- g.connect(MUS.m);if(o.dl){const s=c.createGain();s.gain.value=o.dl;g.connect(s);s.connect(MUS.dl)}osc.start(t);osc.stop(t+dur+.05)}
-function bell(f,t,v){mv(f,t,1.8,{type:'sine',v:v,a:.01,r:1.7,dl:.7})}
-function musTick(){if(!MUS.on)return;const c=MUS.ctx,tr=TRACKS[MUS.t],beat=60/tr.bpm,step=beat/2;
- while(MUS.nx<c.currentTime+2){const t=MUS.nx,s=MUS.st,bar=Math.floor(s/8),ch=tr.bars[bar%4],pos=s%8;
-  if(pos==0){const dur=step*8;[1,2,3].forEach((k,i)=>mv(mf(ch[k]),t,dur+1.4,{type:tr.pad,v:.055,a:1.8,r:2.4,det:i==1?6:i==2?-6:0}));
-   mv(mf(ch[0]-12),t,dur,{type:'sine',v:.15,a:.4,r:1.6})}
-  if(tr.mode=='spark'&&Math.random()<tr.spark){const n=tr.sp[Math.floor(Math.random()*tr.sp.length)];bell(mf(n-12),t,.05+Math.random()*.03)}
-  if(tr.mode=='arp'&&pos%2==0){const seq=[0,2,1,3,2,4,3,1][pos],n=ch[seq]+12;mv(mf(n),t,step*3,{type:'triangle',v:.06,a:.02,r:step*2.4,dl:.4})}
-  if(tr.mode=='mel'){const mel=[[0,4],[4,5],[6,3]];const m=mel.find(x=>x[0]==pos);if(m&&Math.random()<.8){const n=tr.sp[(m[1]+bar)%tr.sp.length];bell(mf(n-12),t,.06)}}
-  MUS.nx+=step;MUS.st++}}
-function musPlay(i){if(!musInit())return;const c=MUS.ctx;if(i!=null)MUS.t=i;
- const go2=()=>{clearInterval(MUS.h);MUS.on=true;MUS.nx=c.currentTime+.1;MUS.st=0;MUS.m.gain.cancelScheduledValues(c.currentTime);MUS.m.gain.setValueAtTime(MUS.m.gain.value,c.currentTime);MUS.m.gain.linearRampToValueAtTime(MUS.vol*.9,c.currentTime+2);MUS.h=setInterval(musTick,500);musTick();document.documentElement.classList.add('lite');D.set.mt=MUS.t;save();render(1)};
- if(c.state=='suspended')c.resume().then(go2).catch(go2);else go2()}
-function musStop(){const c=MUS.ctx;if(!c)return;MUS.on=false;document.documentElement.classList.remove('lite');clearInterval(MUS.h);MUS.m.gain.cancelScheduledValues(c.currentTime);MUS.m.gain.setValueAtTime(MUS.m.gain.value,c.currentTime);MUS.m.gain.linearRampToValueAtTime(0,c.currentTime+.8);setTimeout(()=>{if(!MUS.on)try{c.suspend()}catch(e){}},1000);render(1)}
+ g.connect(bus);let s=null;if(o.dl){s=c.createGain();s.gain.value=o.dl;g.connect(s);s.connect(MUS.dl)}
+ osc.onended=()=>{try{g.disconnect();if(s)s.disconnect()}catch(e){}};osc.start(t);osc.stop(t+dur+.05)}
+function bell(f,t,v,d){d=d||2.4;mv(f,t,d,{type:'sine',v:v,a:.008,r:d-.1});mv(f*2,t,d/2,{type:'sine',v:v*.22,a:.008,r:d/2-.1})}
+function musTick(){if(!MUS.on||!MUS.bus)return;const c=MUS.ctx,tr=TRACKS[MUS.t],beat=60/tr.bpm;if(MUS.nx<c.currentTime)MUS.nx=c.currentTime+.05;
+ while(MUS.nx<c.currentTime+3){const t=MUS.nx,s=MUS.st,bar=Math.floor(s/4),pos=s%4,ch=tr.ch[bar%tr.ch.length].map(n=>n<53?n+12:n);
+  if(pos==0)ch.forEach(n=>mv(mf(n),t,beat*4+1.2,{type:'sine',v:.13,a:1.4,r:2}));
+  if(tr.mode=='spark'&&Math.random()<.55)bell(mf(tr.sc[Math.floor(Math.random()*tr.sc.length)]),t+(Math.random()<.5?0:beat/2),.2);
+  if(tr.mode=='arp')[0,1].forEach(k=>bell(mf(ch[(pos*2+k)%4]),t+k*beat/2,.17,1.5));
+  if(tr.mode=='mel'&&(pos==0||pos==2)&&Math.random()<.85)bell(mf(tr.sc[(pos+bar*2)%tr.sc.length]),t,.2);
+  MUS.nx+=beat;MUS.st++}}
+function musKill(){const c=MUS.ctx;if(!c||!MUS.bus)return;const b=MUS.bus;MUS.bus=null;clearInterval(MUS.h);try{b.gain.cancelScheduledValues(c.currentTime);b.gain.setValueAtTime(b.gain.value,c.currentTime);b.gain.linearRampToValueAtTime(0,c.currentTime+.5)}catch(e){}setTimeout(()=>{try{b.disconnect()}catch(e){}},700)}
+function musPlay(i){if(!musInit())return;const c=MUS.ctx;if(i!=null)MUS.t=i;musKill();
+ const run=()=>{const b=musBus();MUS.on=true;MUS.nx=c.currentTime+.15;MUS.st=0;b.gain.setValueAtTime(0,c.currentTime);b.gain.linearRampToValueAtTime(1,c.currentTime+1.5);MUS.out.gain.value=MUS.vol*MUS.k;MUS.h=setInterval(musTick,700);musTick();applyLite();D.set.mt=MUS.t;save();render(1)};
+ if(c.state!=='running')c.resume().then(run).catch(run);else run()}
+function musStop(){const c=MUS.ctx;if(!c)return;MUS.on=false;musKill();applyLite();setTimeout(()=>{if(!MUS.on)try{c.suspend()}catch(e){}},900);render(1)}
 function musToggle(){if(MUS.on)musStop();else musPlay(D.set.mt||0)}
-function musPick(i){if(MUS.on&&MUS.t==i){musStop();return}if(MUS.on){MUS.on=false;clearInterval(MUS.h);const c=MUS.ctx;MUS.m.gain.cancelScheduledValues(c.currentTime);MUS.m.gain.setValueAtTime(MUS.m.gain.value,c.currentTime);MUS.m.gain.linearRampToValueAtTime(0,c.currentTime+.4);setTimeout(()=>musPlay(i),450)}else musPlay(i)}
-function musStep(d){const i=((MUS.on?MUS.t:(D.set.mt||0))+d+TRACKS.length)%TRACKS.length;musPick2(i)}
-function musPick2(i){if(MUS.on){MUS.on=false;clearInterval(MUS.h);const c=MUS.ctx;MUS.m.gain.cancelScheduledValues(c.currentTime);MUS.m.gain.setValueAtTime(MUS.m.gain.value,c.currentTime);MUS.m.gain.linearRampToValueAtTime(0,c.currentTime+.4);setTimeout(()=>musPlay(i),450)}else{MUS.t=i;D.set.mt=i;save();render(1)}}
-function musVol(v){MUS.vol=v/100;D.set.mv=+v;if(MUS.ctx&&MUS.on)MUS.m.gain.setTargetAtTime(MUS.vol*.9,MUS.ctx.currentTime,.1)}
+function musPick(i){if(MUS.on&&MUS.t==i){musStop();return}musPlay(i)}
+function musStep(d){const i=((MUS.on?MUS.t:(D.set.mt||0))+d+TRACKS.length)%TRACKS.length;if(MUS.on)musPlay(i);else{MUS.t=i;D.set.mt=i;save();render(1)}}
+let _mvh=null;
+function musVol(v){MUS.vol=v/100;D.set.mv=+v;if(MUS.out&&MUS.ctx)MUS.out.gain.setTargetAtTime(MUS.vol*MUS.k,MUS.ctx.currentTime,.1);clearTimeout(_mvh);_mvh=setTimeout(save,500)}
 function musAuto(){if(D.set.mauto&&!MUS.on)musPlay(D.set.mt||0)}
 const _lw=lockWL;lockWL=function(){_lw();musAuto()};
-MUS.vol=(D.set.mv!=null?D.set.mv:50)/100;MUS.t=D.set.mt||0;
+if(!D.set.mv3){D.set.mv=100;D.set.mv3=1;save()}MUS.vol=(D.set.mv!=null?D.set.mv:100)/100;MUS.t=D.set.mt||0;
 function musicView(){const t=TRACKS[MUS.on?MUS.t:(D.set.mt||0)],on=MUS.on;
  return hdr('Musik Angkasa')+`<div class="c mus ${on?'pl':''}"><div class="orb"><svg viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="pl1" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#bfc8ff"/><stop offset=".55" stop-color="#5b6cff"/><stop offset="1" stop-color="#1b1f7a"/></radialGradient></defs><ellipse cx="100" cy="100" rx="88" ry="30" fill="none" stroke="rgba(170,180,255,.45)" stroke-width="2" transform="rotate(-18 100 100)"/><circle cx="100" cy="100" r="42" fill="url(#pl1)"/><ellipse cx="100" cy="100" rx="88" ry="30" fill="none" stroke="rgba(200,210,255,.8)" stroke-width="2.4" stroke-dasharray="140 400" stroke-dashoffset="-190" transform="rotate(-18 100 100)"/><g class="sat"><circle cx="100" cy="14" r="5" fill="#fff"/></g></svg></div>
 <div class="eq">${[0,1,2,3,4].map(i=>`<i style="animation-delay:${i*.15}s"></i>`).join('')}</div><b style="font-size:22px">${t.n}</b><div class="m" style="margin:4px 0 14px">${t.d}</div>
